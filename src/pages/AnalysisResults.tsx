@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, AlertTriangle, Target } from 'lucide-react';
+import { ArrowLeft, TrendingUp, AlertTriangle, Target, Flame, MessageCircle, ShieldCheck, Lock, Twitter, Calendar, RefreshCw } from 'lucide-react';
 import { Social3DMap } from '../components/crossPlatform/Social3DMap';
 import { SentimentTimeline } from '../components/crossPlatform/SentimentTimeline';
 import { EmotionalPulseBar } from '../components/platforms/EmotionalPulseBar';
@@ -10,6 +10,14 @@ export const AnalysisResults: React.FC = () => {
   const { platform, query } = useParams<{ platform?: string; query?: string }>();
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(false);
+  const [startDate, setStartDate] = useState('2026-08-01');
+  const [endDate, setEndDate] = useState('2026-08-27');
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleUpdateRange = () => {
+    setIsUpdating(true);
+    setTimeout(() => setIsUpdating(false), 800);
+  };
 
   useEffect(() => {
     // Detect theme from document
@@ -35,6 +43,303 @@ export const AnalysisResults: React.FC = () => {
   };
 
   const displayQuery = query ? decodeURIComponent(query) : '';
+
+  // Render platform-specific main analysis section
+  const renderMainAnalysisSection = () => {
+    const normalizedPlatform = platform?.toLowerCase();
+
+    // X (Twitter) Platform Analysis
+    if (normalizedPlatform === 'x') {
+      return (
+        <div className="space-y-6">
+          {/* Date Range Picker for X */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
+                  <Twitter className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                    X Signal Clustering Analysis
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    High-velocity public node infiltration and repost dynamics
+                  </p>
+                </div>
+              </div>
+
+              {/* Date Range Picker */}
+              <div className="flex items-center gap-3 p-2 px-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-slate-400" />
+                  <div className="flex flex-col">
+                    <label className="text-[9px] font-bold text-slate-400 uppercase">From</label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      className="bg-transparent text-xs text-slate-900 dark:text-white mono outline-none cursor-pointer"
+                    />
+                  </div>
+                </div>
+
+                <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+                <div className="flex flex-col">
+                  <label className="text-[9px] font-bold text-slate-400 uppercase">To</label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="bg-transparent text-xs text-slate-900 dark:text-white mono outline-none cursor-pointer"
+                  />
+                </div>
+
+                <button
+                  onClick={handleUpdateRange}
+                  disabled={isUpdating}
+                  className="ml-2 p-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
+                  <span className="hidden sm:inline">Apply</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* X-Specific Stats and Hashtags */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Key Metrics */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+                Key X Metrics
+              </h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Total Posts Analyzed</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white">124.4K</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Avg Engagement Rate</span>
+                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">5.8%</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Retweet Velocity</span>
+                  <span className="text-lg font-bold text-blue-600 dark:text-blue-400">+242/hr</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Active Communities</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white">184</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Trending Hashtags */}
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                <Flame className="w-5 h-5 text-orange-500" />
+                Rising Hashtags
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">#AgentDev</span>
+                  <span className="text-sm font-bold text-emerald-500 mono">+242%</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">#AI_Safety</span>
+                  <span className="text-sm font-bold text-emerald-500 mono">+184%</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">#GPTNext</span>
+                  <span className="text-sm font-bold text-emerald-500 mono">+112%</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">#LLMOps</span>
+                  <span className="text-sm font-bold text-emerald-500 mono">+98%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Reddit Platform Analysis
+    if (normalizedPlatform === 'reddit') {
+      return (
+        <div className="space-y-6">
+          {/* Reddit Header */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 dark:bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400 shadow-sm">
+                <MessageCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                  Reddit Discussion Vectors
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Thread hierarchy and sentiment depth mining across subreddits
+                </p>
+              </div>
+            </div>
+
+            {/* Reddit Stats Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Threads Analyzed</div>
+                <div className="text-xl font-bold text-slate-900 dark:text-white">87.2K</div>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Avg Upvote Rate</div>
+                <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">84.2%</div>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Active Subreddits</div>
+                <div className="text-xl font-bold text-slate-900 dark:text-white">78</div>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Avg Sentiment</div>
+                <div className="text-xl font-bold text-orange-600 dark:text-orange-400">42.0%</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Subreddits */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
+              Most Active Subreddits
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white">r/MachineLearning</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">High debate activity</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-slate-900 dark:text-white">24.8K posts</div>
+                  <div className="text-xs text-orange-600 dark:text-orange-400">58% positive</div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white">r/artificial</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Technical discussions</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-slate-900 dark:text-white">18.2K posts</div>
+                  <div className="text-xs text-emerald-600 dark:text-emerald-400">72% positive</div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white">r/LocalLLaMA</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Community support</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-slate-900 dark:text-white">15.4K posts</div>
+                  <div className="text-xs text-emerald-600 dark:text-emerald-400">81% positive</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Telegram Platform Analysis
+    if (normalizedPlatform === 'telegram') {
+      return (
+        <div className="space-y-6">
+          {/* Telegram Header */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-sky-500/10 dark:bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-600 dark:text-sky-400 shadow-sm">
+                  <ShieldCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                    Telegram Alpha Ingestion
+                  </h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Encrypted node intelligence and early alpha signal detection
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 text-xs font-bold text-sky-600 dark:text-sky-400">
+                <Lock className="w-3.5 h-3.5" />
+                50 Alpha Channels
+              </div>
+            </div>
+
+            {/* Telegram Stats */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Alpha Messages</div>
+                <div className="text-xl font-bold text-slate-900 dark:text-white">62.8K</div>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Confidence Score</div>
+                <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">88.0%</div>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Private Channels</div>
+                <div className="text-xl font-bold text-slate-900 dark:text-white">50</div>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Signal Velocity</div>
+                <div className="text-xl font-bold text-sky-600 dark:text-sky-400">+42%</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Alpha Channels */}
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+              <Lock className="w-5 h-5 text-sky-500" />
+              High-Confidence Alpha Channels
+            </h3>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-sky-50 to-blue-50 dark:from-sky-900/20 dark:to-blue-900/20 rounded-xl border border-sky-200 dark:border-sky-800/60">
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white">Alpha Leaks Group</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Early project announcements</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">94.2% positive</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">12.4K members</div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white">Dev Insider Network</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Technical alpha signals</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">86.7% positive</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">8.2K members</div>
+                </div>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-white">AI Research Hub</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">Research breakthroughs</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">91.5% positive</div>
+                  <div className="text-xs text-slate-600 dark:text-slate-400">15.8K members</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] pt-8 pb-20">
@@ -153,51 +458,52 @@ export const AnalysisResults: React.FC = () => {
           </div>
         )}
 
-        {/* 3D Vector Space Visualization */}
-        <div className="mb-12">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                  Intelligence Vector Space Map
-                </h2>
-                <p className="text-sm text-slate-600 dark:text-slate-400">
-                  3D spatial clustering: Trend Velocity × Sentiment Score × Influence Index
-                </p>
-              </div>
-            </div>
-            <Social3DMap isDark={isDark} platform={platform as any || 'all'} />
+        {/* 1. Main Analysis Section - Platform Specific */}
+        {renderMainAnalysisSection()}
+
+        {/* 2. Sentiment Dynamics Timeline */}
+        <div className="mt-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+              Sentiment Dynamics Timeline
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Historical sentiment flow across the selected platform
+            </p>
           </div>
+          <SentimentTimeline 
+            isDark={isDark} 
+            timeline={sentimentTimelineData['24H']}
+            lineColor={platform === 'reddit' ? '#f97316' : platform === 'telegram' ? '#0ea5e9' : '#3b82f6'}
+          />
         </div>
 
-        {/* Sentiment Timeline */}
-        <div className="mb-12">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                Sentiment Dynamics Timeline
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Historical sentiment flow across the selected platform
-              </p>
-            </div>
-            <SentimentTimeline isDark={isDark} timeline={sentimentTimelineData['24H']} />
+        {/* 3. Emotional Pulse Distribution */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+              Emotional Pulse Distribution
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Emotional sentiment breakdown across detected signals
+            </p>
           </div>
+          <EmotionalPulseBar isDark={isDark} />
         </div>
 
-        {/* Emotional Pulse */}
-        <div>
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-            <div className="mb-6">
+        {/* 4. 3D Intelligence Vector Space Map */}
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-center justify-between mb-6">
+            <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                Emotional Pulse Distribution
+                Intelligence Vector Space Map
               </h2>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Emotional sentiment breakdown across detected signals
+                3D spatial clustering: Trend Velocity × Sentiment Score × Influence Index
               </p>
             </div>
-            <EmotionalPulseBar isDark={isDark} />
           </div>
+          <Social3DMap isDark={isDark} platform={platform as any || 'all'} />
         </div>
       </div>
     </div>
