@@ -1,4 +1,4 @@
-export type PlatformType = 'all' | 'x' | 'reddit' | 'telegram';
+export type PlatformType = 'all' | 'x' | 'social' | 'telegram';
 
 export interface KPIMetric {
   id: string;
@@ -39,10 +39,10 @@ export interface PlatformVariancePoint {
 export interface BenchmarkRow {
   metric: string;
   xValue: string;
-  redditValue: string;
+  socialValue: string;
   telegramValue: string;
   xDetail?: string;
-  redditDetail?: string;
+  socialDetail?: string;
   telegramDetail?: string;
 }
 
@@ -96,7 +96,7 @@ export interface PipelineStage {
 
 export interface PlatformDistribution {
   xRecords: number;
-  redditRecords: number;
+  socialRecords: number;
   telegramRecords: number;
   totalRecords: number;
 }

@@ -14,7 +14,7 @@ export const SearchSection: React.FC = () => {
     
     // Navigate to analysis results page
     const encodedQuery = encodeURIComponent(q);
-    navigate(`/analysis/${targetPlatform}/${encodedQuery}`);
+    navigate(`/dashboard/analysis/${targetPlatform}/${encodedQuery}`);
   };
 
   return (
@@ -50,7 +50,7 @@ export const SearchSection: React.FC = () => {
               />
               <button
                 onClick={() => handleSearch()}
-                className="px-6 sm:px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-all shadow-md flex items-center gap-2 shrink-0"
+                className="px-6 sm:px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-all shadow-md flex items-center gap-2 shrink-0 active:scale-[0.985]"
               >
                 <span>Analyze</span>
                 <Zap className="w-4 h-4" />
@@ -65,7 +65,7 @@ export const SearchSection: React.FC = () => {
                 Target Node:
               </span>
               <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-[10px] font-bold">
-                {(['all', 'x', 'reddit', 'telegram'] as const).map((p) => (
+                {(['all', 'x', 'social', 'telegram'] as const).map((p) => (
                   <button
                     key={p}
                     onClick={() => setTargetPlatform(p)}
@@ -75,7 +75,7 @@ export const SearchSection: React.FC = () => {
                         : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
-                    {p}
+                    {p === 'social' ? 'Social' : p}
                   </button>
                 ))}
               </div>

@@ -22,7 +22,7 @@ export const generateAIResponse = (userQuery: string): ChatMessage => {
       text: 'Top trending topics right now are #AgentDev (+124% velocity), #GPT5Architecture (+82%), and #LLMOps (+112%). Multi-modal agent deployments have generated over 28,000 unified impressions.',
       timestamp,
       chartType: 'topic-bars',
-      analystSummary: 'Breakout vector detected in enterprise autonomous agents discussions across X and Reddit.',
+      analystSummary: 'Breakout vector detected in enterprise autonomous agents discussions across X (Twitter) and social media platforms.',
     };
   }
 
@@ -30,10 +30,10 @@ export const generateAIResponse = (userQuery: string): ChatMessage => {
     return {
       id: `ai-${Date.now()}`,
       sender: 'ai',
-      text: 'Telegram currently exhibits the highest net positive sentiment (88%), followed by X at 68%. Reddit maintains a more analytical and skeptical discourse at 42% positivity with 32% neutral debate.',
+      text: 'Telegram currently exhibits the highest net positive sentiment (88%), followed by X at 68%. Social media channels maintain an analytical discourse at 58% positivity with 23% neutral debate.',
       timestamp,
       chartType: 'platform-variance',
-      analystSummary: 'Cross-platform variance index is 46 points, showing significant divergence between retail/dev communities and formal technical forums.',
+      analystSummary: 'Cross-platform variance index is 30 points, showing healthy sentiment distribution across developer channels and public platforms.',
     };
   }
 

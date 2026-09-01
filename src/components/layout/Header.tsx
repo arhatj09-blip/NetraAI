@@ -1,12 +1,11 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { Sun, Moon, Settings, BrainCircuit, FileText } from 'lucide-react';
 import { ThemeMode } from '../../hooks/useTheme';
 
 interface HeaderProps {
   theme: ThemeMode;
   onThemeToggle: (mode: ThemeMode) => void;
-  lastSync: string;
-  nextSync: string;
   onOpenSettings: () => void;
   onOpenReportModal: () => void;
 }
@@ -14,8 +13,6 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   theme,
   onThemeToggle,
-  lastSync,
-  nextSync,
   onOpenSettings,
   onOpenReportModal,
 }) => {
@@ -24,8 +21,8 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <nav className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 h-16 px-6 lg:px-8 flex items-center justify-between transition-colors duration-300">
       {/* Brand Identity */}
-      <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+      <Link to="/dashboard" className="flex items-center gap-3 group">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 group-hover:scale-105 transition-transform">
           <BrainCircuit className="w-5 h-5" />
         </div>
         <div>
@@ -36,25 +33,14 @@ export const Header: React.FC<HeaderProps> = ({
             v2.4 Live
           </span>
         </div>
-      </div>
+      </Link>
 
       {/* Center: Live Ingestion Pipeline Status Pill */}
-      <div className="hidden md:flex items-center gap-4 px-5 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 shadow-sm">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 status-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-          <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
-            Pipeline Active
-          </span>
-        </div>
-        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700"></div>
-        <div className="flex items-center gap-4 text-[11px] font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          <span>
-            Last: <strong className="text-slate-900 dark:text-slate-200 ml-1 mono">{lastSync}</strong>
-          </span>
-          <span>
-            Next: <strong className="text-slate-900 dark:text-slate-200 ml-1 mono">{nextSync}</strong>
-          </span>
-        </div>
+      <div className="hidden md:flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 shadow-sm">
+        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 status-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+        <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+          Pipeline Active
+        </span>
       </div>
 
       {/* Right Controls */}

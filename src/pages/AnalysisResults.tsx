@@ -1,22 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, TrendingUp, AlertTriangle, Target, Flame, MessageCircle, ShieldCheck, Lock, Twitter, Calendar, RefreshCw } from 'lucide-react';
+import { ArrowLeft, TrendingUp, AlertTriangle, Target, Flame, MessageCircle, ShieldCheck, Lock, Twitter, BarChart3, Heart, Users, Shield } from 'lucide-react';
 import { Social3DMap } from '../components/crossPlatform/Social3DMap';
 import { SentimentTimeline } from '../components/crossPlatform/SentimentTimeline';
 import { EmotionalPulseBar } from '../components/platforms/EmotionalPulseBar';
+import { DateRangeFilter } from '../components/analysis/DateRangeFilter';
 import { sentimentTimelineData } from '../services/mockData';
 
 export const AnalysisResults: React.FC = () => {
   const { platform, query } = useParams<{ platform?: string; query?: string }>();
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(false);
-  const [startDate, setStartDate] = useState('2026-08-01');
-  const [endDate, setEndDate] = useState('2026-08-27');
-  const [isUpdating, setIsUpdating] = useState(false);
+  
+  // Universal date range state for entire analysis page
+  const [activeDateRange, setActiveDateRange] = useState({
+    startDate: '2026-08-01',
+    endDate: '2026-08-27',
+  });
 
-  const handleUpdateRange = () => {
-    setIsUpdating(true);
-    setTimeout(() => setIsUpdating(false), 800);
+  const handleApplyDateRange = (startDate: string, endDate: string) => {
+    setActiveDateRange({ startDate, endDate });
   };
 
   useEffect(() => {
@@ -52,58 +55,19 @@ export const AnalysisResults: React.FC = () => {
     if (normalizedPlatform === 'x') {
       return (
         <div className="space-y-6">
-          {/* Date Range Picker for X */}
+          {/* X Platform Header */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
-                  <Twitter className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                    X Signal Clustering Analysis
-                  </h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    High-velocity public node infiltration and repost dynamics
-                  </p>
-                </div>
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-sm">
+                <Twitter className="w-6 h-6" />
               </div>
-
-              {/* Date Range Picker */}
-              <div className="flex items-center gap-3 p-2 px-4 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-slate-400" />
-                  <div className="flex flex-col">
-                    <label className="text-[9px] font-bold text-slate-400 uppercase">From</label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="bg-transparent text-xs text-slate-900 dark:text-white mono outline-none cursor-pointer"
-                    />
-                  </div>
-                </div>
-
-                <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
-
-                <div className="flex flex-col">
-                  <label className="text-[9px] font-bold text-slate-400 uppercase">To</label>
-                  <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    className="bg-transparent text-xs text-slate-900 dark:text-white mono outline-none cursor-pointer"
-                  />
-                </div>
-
-                <button
-                  onClick={handleUpdateRange}
-                  disabled={isUpdating}
-                  className="ml-2 p-2 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5 shadow-sm"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
-                  <span className="hidden sm:inline">Apply</span>
-                </button>
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                  X Signal Clustering Analysis
+                </h3>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  High-velocity public node infiltration and repost dynamics
+                </p>
               </div>
             </div>
           </div>
@@ -165,66 +129,66 @@ export const AnalysisResults: React.FC = () => {
       );
     }
 
-    // Reddit Platform Analysis
-    if (normalizedPlatform === 'reddit') {
+    // Social Media Platform Analysis
+    if (normalizedPlatform === 'social' || normalizedPlatform === 'reddit') {
       return (
         <div className="space-y-6">
-          {/* Reddit Header */}
+          {/* Social Feeds Header */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 dark:bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-600 dark:text-orange-400 shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 dark:bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 shadow-sm">
                 <MessageCircle className="w-6 h-6" />
               </div>
               <div>
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                  Reddit Discussion Vectors
+                  Social Media Discussion Vectors
                 </h3>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Thread hierarchy and sentiment depth mining across subreddits
+                  Channel hierarchy and sentiment depth mining across social media platforms
                 </p>
               </div>
             </div>
 
-            {/* Reddit Stats Grid */}
+            {/* Social Stats Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Threads Analyzed</div>
-                <div className="text-xl font-bold text-slate-900 dark:text-white">87.2K</div>
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Signals Analyzed</div>
+                <div className="text-xl font-bold text-slate-900 dark:text-white">90.0K</div>
               </div>
               <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Avg Upvote Rate</div>
-                <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">84.2%</div>
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Avg Engagement</div>
+                <div className="text-xl font-bold text-emerald-600 dark:text-emerald-400">76.4%</div>
               </div>
               <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Active Subreddits</div>
-                <div className="text-xl font-bold text-slate-900 dark:text-white">78</div>
+                <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Active Channels</div>
+                <div className="text-xl font-bold text-slate-900 dark:text-white">112</div>
               </div>
               <div className="p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
                 <div className="text-xs text-slate-600 dark:text-slate-400 mb-1">Avg Sentiment</div>
-                <div className="text-xl font-bold text-orange-600 dark:text-orange-400">42.0%</div>
+                <div className="text-xl font-bold text-indigo-600 dark:text-indigo-400">58.0%</div>
               </div>
             </div>
           </div>
 
-          {/* Top Subreddits */}
+          {/* Top Channels */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4">
-              Most Active Subreddits
+              Most Active Discussion Nodes
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
                 <div>
-                  <div className="font-bold text-slate-900 dark:text-white">r/MachineLearning</div>
+                  <div className="font-bold text-slate-900 dark:text-white">Machine Learning &amp; AI Ethics</div>
                   <div className="text-xs text-slate-600 dark:text-slate-400">High debate activity</div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-bold text-slate-900 dark:text-white">24.8K posts</div>
-                  <div className="text-xs text-orange-600 dark:text-orange-400">58% positive</div>
+                  <div className="text-xs text-indigo-600 dark:text-indigo-400">58% positive</div>
                 </div>
               </div>
               <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
                 <div>
-                  <div className="font-bold text-slate-900 dark:text-white">r/artificial</div>
+                  <div className="font-bold text-slate-900 dark:text-white">Autonomous Agent Architecture</div>
                   <div className="text-xs text-slate-600 dark:text-slate-400">Technical discussions</div>
                 </div>
                 <div className="text-right">
@@ -234,7 +198,7 @@ export const AnalysisResults: React.FC = () => {
               </div>
               <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
                 <div>
-                  <div className="font-bold text-slate-900 dark:text-white">r/LocalLLaMA</div>
+                  <div className="font-bold text-slate-900 dark:text-white">Local LLM &amp; Open Models</div>
                   <div className="text-xs text-slate-600 dark:text-slate-400">Community support</div>
                 </div>
                 <div className="text-right">
@@ -346,7 +310,7 @@ export const AnalysisResults: React.FC = () => {
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
         {/* Back Button */}
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/dashboard')}
           className="flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 mb-8 transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
@@ -383,12 +347,25 @@ export const AnalysisResults: React.FC = () => {
             </>
           ) : (
             <>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-3">
-                {getPlatformDisplay(platform)} Analysis
-              </h1>
-              <p className="text-slate-600 dark:text-slate-400">
-                Comprehensive intelligence insights and signal analysis
-              </p>
+              <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 mb-6">
+                <div>
+                  <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white mb-3">
+                    {getPlatformDisplay(platform)} Analysis
+                  </h1>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    Comprehensive intelligence insights and signal analysis
+                  </p>
+                </div>
+                
+                {/* Global Date Range Filter */}
+                <div className="w-full lg:w-auto">
+                  <DateRangeFilter
+                    startDate={activeDateRange.startDate}
+                    endDate={activeDateRange.endDate}
+                    onApply={handleApplyDateRange}
+                  />
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -427,7 +404,7 @@ export const AnalysisResults: React.FC = () => {
                     Risk Vector Detected
                   </div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-                    Reddit: r/MachineLearning Ethics
+                    Social Feeds: AI Ethics Vector
                   </h3>
                 </div>
               </div>
@@ -458,10 +435,131 @@ export const AnalysisResults: React.FC = () => {
           </div>
         )}
 
-        {/* 1. Main Analysis Section - Platform Specific */}
+        {/* 1. 3D Intelligence Vector Space Map - moved to the first major analytics section after the title header */}
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] gap-6 mb-12">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  Intelligence Vector Space Map
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  3D spatial clustering: Trend Velocity × Sentiment Score × Influence Index
+                </p>
+              </div>
+              <div className="flex items-center gap-3 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div> X (Twitter)
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-indigo-500"></div> Social Media
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-sky-500"></div> Telegram
+                </div>
+              </div>
+            </div>
+            <div className="bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 overflow-hidden shadow-inner">
+              <Social3DMap isDark={isDark} platform={platform as any || 'all'} height="h-[420px]" />
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm">
+            {/* Header */}
+            <div className="flex items-center gap-4 mb-8">
+              <div className="w-12 h-12 rounded-xl bg-blue-500/15 dark:bg-blue-500/25 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                <Target className="w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                Key Platform Metrics
+              </h2>
+            </div>
+
+            {/* Metrics Grid - 2x2 Layout */}
+            <div className="grid grid-cols-2 gap-6">
+              {/* Influence Index */}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-800/50 dark:to-slate-800/30 border border-slate-200 dark:border-slate-700/60 hover:border-blue-400 dark:hover:border-blue-500 transition-all">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 dark:bg-blue-500/25 flex items-center justify-center text-blue-600 dark:text-blue-400">
+                    <BarChart3 className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">
+                  Influence Index
+                </div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                  92.4
+                </div>
+                <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>+6.2%</span>
+                </div>
+              </div>
+
+              {/* Net Sentiment */}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-800/50 dark:to-slate-800/30 border border-slate-200 dark:border-slate-700/60 hover:border-red-400 dark:hover:border-red-500 transition-all">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-red-500/20 dark:bg-red-500/25 flex items-center justify-center text-red-600 dark:text-red-400">
+                    <Heart className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">
+                  Net Sentiment
+                </div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                  +8.4%
+                </div>
+                <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>+12.1%</span>
+                </div>
+              </div>
+
+              {/* Activity Volume */}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-800/50 dark:to-slate-800/30 border border-slate-200 dark:border-slate-700/60 hover:border-purple-400 dark:hover:border-purple-500 transition-all">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 dark:bg-purple-500/25 flex items-center justify-center text-purple-600 dark:text-purple-400">
+                    <Users className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">
+                  Activity Volume
+                </div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                  48.3K
+                </div>
+                <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>+24.7%</span>
+                </div>
+              </div>
+
+              {/* Signal Confidence */}
+              <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-50 to-slate-50/50 dark:from-slate-800/50 dark:to-slate-800/30 border border-slate-200 dark:border-slate-700/60 hover:border-emerald-400 dark:hover:border-emerald-500 transition-all">
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/20 dark:bg-emerald-500/25 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <Shield className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="text-xs font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">
+                  Signal Confidence
+                </div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-white mb-3">
+                  89%
+                </div>
+                <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                  <TrendingUp className="w-4 h-4" />
+                  <span>+3.5%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Main Analysis Section - Platform Specific */}
         {renderMainAnalysisSection()}
 
-        {/* 2. Sentiment Dynamics Timeline */}
+        {/* 3. Sentiment Dynamics Timeline */}
         <div className="mt-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
@@ -474,11 +572,11 @@ export const AnalysisResults: React.FC = () => {
           <SentimentTimeline 
             isDark={isDark} 
             timeline={sentimentTimelineData['24H']}
-            lineColor={platform === 'reddit' ? '#f97316' : platform === 'telegram' ? '#0ea5e9' : '#3b82f6'}
+            lineColor={platform === 'social' ? '#6366f1' : platform === 'telegram' ? '#0ea5e9' : '#3b82f6'}
           />
         </div>
 
-        {/* 3. Emotional Pulse Distribution */}
+        {/* 4. Emotional Pulse Distribution */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
@@ -489,21 +587,6 @@ export const AnalysisResults: React.FC = () => {
             </p>
           </div>
           <EmotionalPulseBar isDark={isDark} />
-        </div>
-
-        {/* 4. 3D Intelligence Vector Space Map */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                Intelligence Vector Space Map
-              </h2>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                3D spatial clustering: Trend Velocity × Sentiment Score × Influence Index
-              </p>
-            </div>
-          </div>
-          <Social3DMap isDark={isDark} platform={platform as any || 'all'} />
         </div>
       </div>
     </div>

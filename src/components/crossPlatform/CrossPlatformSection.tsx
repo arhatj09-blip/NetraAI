@@ -45,7 +45,7 @@ export const CrossPlatformSection: React.FC<CrossPlatformSectionProps> = ({
             Unified Social Signals Dashboard
           </h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm">
-            Continuous ingestion & signal vector space across X, Reddit, and Telegram
+            Continuous ingestion & signal vector space across X (Twitter) and social media platforms
           </p>
         </div>
 
@@ -69,17 +69,17 @@ export const CrossPlatformSection: React.FC<CrossPlatformSectionProps> = ({
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Twitter className="w-3.5 h-3.5 text-blue-400" /> X
+            <Twitter className="w-3.5 h-3.5 text-blue-400" /> X (Twitter)
           </button>
           <button
-            onClick={() => setSelectedPlatform('reddit')}
+            onClick={() => setSelectedPlatform('social')}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-              selectedPlatform === 'reddit'
-                ? 'bg-orange-600 text-white shadow-md'
+              selectedPlatform === 'social'
+                ? 'bg-indigo-600 text-white shadow-md'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <MessageSquare className="w-3.5 h-3.5 text-orange-400" /> Reddit
+            <MessageSquare className="w-3.5 h-3.5 text-indigo-400" /> Social Feeds
           </button>
           <button
             onClick={() => setSelectedPlatform('telegram')}

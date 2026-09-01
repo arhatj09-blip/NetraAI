@@ -6,9 +6,19 @@ import { sentimentTimelineData } from '../../services/mockData';
 
 interface RedditAnalysisSectionProps {
   isDark: boolean;
+  activeDateRange?: {
+    startDate: string;
+    endDate: string;
+  };
 }
 
-export const RedditAnalysisSection: React.FC<RedditAnalysisSectionProps> = ({ isDark }) => {
+export const RedditAnalysisSection: React.FC<RedditAnalysisSectionProps> = ({
+  isDark,
+  activeDateRange,
+}) => {
+  const dateRangeDisplay = activeDateRange
+    ? `${activeDateRange.startDate} to ${activeDateRange.endDate}`
+    : 'All Time';
   return (
     <section id="reddit-analysis" className="space-y-8">
       <div className="flex items-center gap-4">
@@ -20,7 +30,7 @@ export const RedditAnalysisSection: React.FC<RedditAnalysisSectionProps> = ({ is
             Reddit Discussion Vectors
           </h2>
           <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold">
-            Thread Hierarchy &amp; Sentiment Depth Mining
+            Thread Hierarchy &amp; Sentiment Depth Mining — {dateRangeDisplay}
           </p>
         </div>
       </div>
@@ -39,7 +49,7 @@ export const RedditAnalysisSection: React.FC<RedditAnalysisSectionProps> = ({ is
           </div>
 
           <div className="bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 overflow-hidden shadow-inner">
-            <Social3DMap platform="reddit" isDark={isDark} height="h-[380px]" />
+            <Social3DMap platform="social" isDark={isDark} height="h-[380px]" />
           </div>
         </div>
 

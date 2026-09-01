@@ -4,9 +4,19 @@ import { Social3DMap } from '../crossPlatform/Social3DMap';
 
 interface TelegramAnalysisSectionProps {
   isDark: boolean;
+  activeDateRange?: {
+    startDate: string;
+    endDate: string;
+  };
 }
 
-export const TelegramAnalysisSection: React.FC<TelegramAnalysisSectionProps> = ({ isDark }) => {
+export const TelegramAnalysisSection: React.FC<TelegramAnalysisSectionProps> = ({
+  isDark,
+  activeDateRange,
+}) => {
+  const dateRangeDisplay = activeDateRange
+    ? `${activeDateRange.startDate} to ${activeDateRange.endDate}`
+    : 'All Time';
   return (
     <section id="telegram-analysis" className="space-y-8">
       <div className="flex items-center justify-between">
@@ -19,7 +29,7 @@ export const TelegramAnalysisSection: React.FC<TelegramAnalysisSectionProps> = (
               Telegram Alpha Ingestion
             </h2>
             <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold">
-              Encrypted Node Intelligence &amp; Alpha Signal Flow
+              Encrypted Node Intelligence &amp; Alpha Signal Flow — {dateRangeDisplay}
             </p>
           </div>
         </div>
