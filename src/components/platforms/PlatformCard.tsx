@@ -2,7 +2,7 @@ import React from 'react';
 import { ArrowRight } from 'lucide-react';
 
 interface PlatformCardProps {
-  platform: 'X' | 'Reddit' | 'Telegram';
+  platform: 'X' | 'Social' | 'Telegram' | string;
   icon: React.ReactNode;
   title: string;
   description: string;
@@ -59,7 +59,7 @@ export const PlatformCard: React.FC<PlatformCardProps> = ({
       </div>
 
       {/* View Analysis Button */}
-      <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg font-semibold text-sm group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+      <button className="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg font-semibold text-sm group-hover:bg-blue-600 group-hover:text-white transition-all duration-300 active:scale-[0.985] active:shadow-inner">
         <span>View Analysis</span>
         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
       </button>

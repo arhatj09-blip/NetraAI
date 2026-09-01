@@ -16,8 +16,8 @@ import {
 } from '../types/intelligence';
 
 export const platformDistributionData: PlatformDistribution = {
-  xRecords: 124392,
-  redditRecords: 87201,
+  xRecords: 184392,
+  socialRecords: 90000,
   telegramRecords: 62799,
   totalRecords: 274392,
 };
@@ -26,21 +26,21 @@ export const getKPIMetrics = (platform: PlatformType): KPIMetric[] => {
   switch (platform) {
     case 'x':
       return [
-        { id: '1', label: 'Total Posts', value: '124.4K', trend: '+12% Trend', trendPositive: true, accentColor: '#3b82f6' },
+        { id: '1', label: 'Total Posts', value: '184.4K', trend: '+12% Trend', trendPositive: true, accentColor: '#3b82f6' },
         { id: '2', label: 'Positive', value: '64.2%', trend: '+3%', trendPositive: true, accentColor: '#10b981' },
         { id: '3', label: 'Negative', value: '18.4%', trend: '-5%', trendPositive: false, accentColor: '#ef4444' },
         { id: '4', label: 'Neutral', value: '17.4%', statusText: 'Stable', accentColor: '#9ca3af' },
         { id: '5', label: 'Engagement', value: '5.8%', statusText: 'High', accentColor: '#6366f1' },
         { id: '6', label: 'Communities', value: '184', statusText: 'Spreading', accentColor: '#a855f7' },
       ];
-    case 'reddit':
+    case 'social':
       return [
-        { id: '1', label: 'Total Threads', value: '87.2K', trend: '+8.4%', trendPositive: true, accentColor: '#f97316' },
-        { id: '2', label: 'Positive', value: '42.0%', trend: '-2.1%', trendPositive: false, accentColor: '#10b981' },
-        { id: '3', label: 'Negative', value: '26.0%', trend: '+4.0%', trendPositive: false, accentColor: '#ef4444' },
-        { id: '4', label: 'Neutral', value: '32.0%', statusText: 'High Debate', accentColor: '#9ca3af' },
-        { id: '5', label: 'Avg Upvotes', value: '84.2%', statusText: 'Active', accentColor: '#f59e0b' },
-        { id: '6', label: 'Subreddits', value: '78', statusText: 'Focused', accentColor: '#a855f7' },
+        { id: '1', label: 'Total Signals', value: '90.0K', trend: '+8.4%', trendPositive: true, accentColor: '#6366f1' },
+        { id: '2', label: 'Positive', value: '58.0%', trend: '+1.5%', trendPositive: true, accentColor: '#10b981' },
+        { id: '3', label: 'Negative', value: '19.0%', trend: '-2.0%', trendPositive: false, accentColor: '#ef4444' },
+        { id: '4', label: 'Neutral', value: '23.0%', statusText: 'Active Debate', accentColor: '#9ca3af' },
+        { id: '5', label: 'Avg Engagement', value: '76.4%', statusText: 'High Signal', accentColor: '#f59e0b' },
+        { id: '6', label: 'Monitored Channels', value: '112', statusText: 'Indexed', accentColor: '#a855f7' },
       ];
     case 'telegram':
       return [
@@ -65,19 +65,19 @@ export const getKPIMetrics = (platform: PlatformType): KPIMetric[] => {
 
 export const vectorSpaceData: VectorDataPoint[] = [
   { topic: 'AI Agents', trend: 84, sentiment: 71, influence: 91, platform: 'x', color: '#3b82f6' },
-  { topic: 'AI Jobs', trend: 67, sentiment: 52, influence: 78, platform: 'reddit', color: '#f97316' },
+  { topic: 'AI Jobs', trend: 67, sentiment: 52, influence: 78, platform: 'social', color: '#6366f1' },
   { topic: 'Regulation', trend: 42, sentiment: 41, influence: 66, platform: 'telegram', color: '#0ea5e9' },
   { topic: 'GPT-5', trend: 76, sentiment: 68, influence: 82, platform: 'x', color: '#3b82f6' },
-  { topic: 'LLMOps', trend: 55, sentiment: 80, influence: 40, platform: 'reddit', color: '#f97316' },
+  { topic: 'LLMOps', trend: 55, sentiment: 80, influence: 40, platform: 'social', color: '#6366f1' },
   { topic: 'Ethics', trend: 88, sentiment: 45, influence: 70, platform: 'telegram', color: '#0ea5e9' },
   { topic: 'Agentic Workflows', trend: 92, sentiment: 85, influence: 88, platform: 'x', color: '#3b82f6' },
-  { topic: 'Open Source Models', trend: 65, sentiment: 78, influence: 58, platform: 'reddit', color: '#f97316' },
+  { topic: 'Open Source Models', trend: 65, sentiment: 78, influence: 58, platform: 'social', color: '#6366f1' },
 ];
 
 export const sentimentDistributionData: Record<PlatformType, SentimentDistribution> = {
   all: { positive: 72, neutral: 17, negative: 11 },
   x: { positive: 68, neutral: 12, negative: 20 },
-  reddit: { positive: 42, neutral: 32, negative: 26 },
+  social: { positive: 58, neutral: 23, negative: 19 },
   telegram: { positive: 88, neutral: 8, negative: 4 },
 };
 
@@ -119,7 +119,7 @@ export const sentimentTimelineData: Record<string, SentimentTimelinePoint[]> = {
 
 export const platformVarianceData: PlatformVariancePoint[] = [
   { platform: 'X (Twitter)', positivity: 68, color: '#3b82f6' },
-  { platform: 'Reddit', positivity: 42, color: '#f97316' },
+  { platform: 'Social Media Platforms', positivity: 58, color: '#6366f1' },
   { platform: 'Telegram', positivity: 88, color: '#0ea5e9' },
 ];
 
@@ -127,31 +127,31 @@ export const benchmarkComparisonData: BenchmarkRow[] = [
   {
     metric: 'Sentiment (Pos / Neu / Neg)',
     xValue: '68% / 12% / 20%',
-    redditValue: '42% / 32% / 26%',
+    socialValue: '58% / 23% / 19%',
     telegramValue: '88% / 8% / 4%',
   },
   {
     metric: 'Total Mentions',
     xValue: '8,421',
-    redditValue: '3,109',
+    socialValue: '3,109',
     telegramValue: '1,270',
   },
   {
     metric: 'Growth (24H)',
     xValue: '+18.4%',
-    redditValue: '+5.2%',
+    socialValue: '+7.8%',
     telegramValue: '+42.1%',
   },
   {
     metric: 'Engagement Rank',
     xValue: '#1 High',
-    redditValue: '#3 Stable',
-    telegramValue: '#2 Growth',
+    socialValue: '#2 Stable',
+    telegramValue: '#3 Growth',
   },
   {
     metric: 'Dominant Emotion',
     xValue: 'Excitement (62%)',
-    redditValue: 'Anxiety (41%)',
+    socialValue: 'Curiosity (54%)',
     telegramValue: 'Optimism (82%)',
   },
 ];
@@ -197,7 +197,7 @@ export const topInfluencersData: NetworkInfluencer[] = [
 
 export const initialIngestionLogs: IngestionLogEntry[] = [
   { id: 'log-1', timestamp: '11:45 PM', type: 'Batch Sync', recordCount: '+327 records', status: 'complete', detail: 'Analytics recalculation complete across 12 nodes' },
-  { id: 'log-2', timestamp: '11:30 PM', type: 'Batch Sync', recordCount: '+412 records', status: 'complete', detail: 'X & Reddit ingestion verified' },
+  { id: 'log-2', timestamp: '11:30 PM', type: 'Batch Sync', recordCount: '+412 records', status: 'complete', detail: 'X & Social Media Feeds ingestion verified' },
   { id: 'log-3', timestamp: '11:15 PM', type: 'Batch Sync', recordCount: '+289 records', status: 'complete', detail: 'Telegram channel batch synchronized' },
   { id: 'log-4', timestamp: '11:00 PM', type: 'Batch Sync', recordCount: '+512 records', status: 'complete', detail: 'Vector clustering updated' },
 ];
@@ -217,7 +217,7 @@ export const initialChatMessages: ChatMessage[] = [
   {
     id: 'msg-1',
     sender: 'ai',
-    text: 'Hello. I am the NetraAI Analyst. I have processed 274,392 records from X, Reddit, and Telegram in the last 15 minutes. How can I assist your intelligence operations today?',
+    text: 'Hello. I am the NetraAI Analyst. I have processed 274,392 records from X (Twitter) and social media platforms in the last 15 minutes. How can I assist your intelligence operations today?',
     timestamp: '11:45 PM',
   },
   {
@@ -229,9 +229,9 @@ export const initialChatMessages: ChatMessage[] = [
   {
     id: 'msg-3',
     sender: 'ai',
-    text: 'Currently, #AIAgents displays a strongly positive aggregate sentiment (72%), though there is significant variance between platforms. Telegram shows the highest optimism at 88%, while Reddit discussions are more cautious at 42% positive.',
+    text: 'Currently, #AIAgents displays a strongly positive aggregate sentiment (72%), though there is variance between platforms. Telegram shows high optimism at 88%, while X and public channels average 64% positive.',
     timestamp: '11:46 PM',
     chartType: 'platform-variance',
-    analystSummary: 'The Reddit sentiment dip is primarily correlated with discussions in r/MLOps regarding deployment stability and cost overheads for autonomous agents.',
+    analystSummary: 'Public discourse indicates strong focus on multi-modal agent architecture and enterprise deployment stability.',
   },
 ];

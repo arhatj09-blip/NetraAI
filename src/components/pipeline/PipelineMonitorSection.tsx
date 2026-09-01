@@ -93,18 +93,18 @@ export const PipelineMonitorSection: React.FC = () => {
                 </div>
               </div>
 
-              {/* Reddit */}
+              {/* Social Media Platforms */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs font-bold">
                   <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                    <MessageSquare className="w-3.5 h-3.5 text-orange-500" /> Reddit
+                    <MessageSquare className="w-3.5 h-3.5 text-indigo-500" /> Social Media Channels
                   </span>
                   <span className="mono text-slate-900 dark:text-white">
-                    {(platformDistributionData.redditRecords / 1000).toFixed(1)}K (32%)
+                    {(platformDistributionData.socialRecords / 1000).toFixed(1)}K (33%)
                   </span>
                 </div>
                 <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700/60">
-                  <div className="h-full bg-orange-500 rounded-full" style={{ width: '32%' }}></div>
+                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: '33%' }}></div>
                 </div>
               </div>
 

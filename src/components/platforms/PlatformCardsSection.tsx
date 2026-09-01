@@ -7,7 +7,7 @@ export const PlatformCardsSection: React.FC = () => {
   const navigate = useNavigate();
 
   const handlePlatformClick = (platform: string) => {
-    navigate(`/analysis/${platform.toLowerCase()}`);
+    navigate(`/dashboard/analysis/${platform.toLowerCase()}`);
   };
 
   return (
@@ -23,7 +23,7 @@ export const PlatformCardsSection: React.FC = () => {
           Social Media Analytics
         </h2>
         <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
-          Deep dive into platform-specific insights and sentiment analysis across X, Reddit, and Telegram
+          Deep dive into platform-specific insights and sentiment analysis across X (Twitter) and social media platforms
         </p>
       </div>
 
@@ -35,7 +35,7 @@ export const PlatformCardsSection: React.FC = () => {
           title="X (Twitter)"
           description="Real-time sentiment tracking and trending topic analysis from X platform"
           stats={[
-            { label: 'Active Signals', value: '124.4K' },
+            { label: 'Active Signals', value: '184.4K' },
             { label: 'Avg Sentiment', value: '+68.2%' },
             { label: 'Trend Velocity', value: '↑ 12.4%' },
           ]}
@@ -43,19 +43,19 @@ export const PlatformCardsSection: React.FC = () => {
           onClick={() => handlePlatformClick('X')}
         />
 
-        {/* Reddit Card */}
+        {/* Social Media Feeds Card */}
         <PlatformCard
-          platform="Reddit"
+          platform="Social"
           icon={<Users className="w-7 h-7 text-white" />}
-          title="Reddit"
-          description="Discussion vector analysis and subreddit sentiment monitoring"
+          title="Social Media Feeds"
+          description="Discussion vector analysis and multi-source community sentiment monitoring"
           stats={[
-            { label: 'Active Signals', value: '87.2K' },
-            { label: 'Avg Sentiment', value: '+72.8%' },
-            { label: 'Trend Velocity', value: '↑ 8.6%' },
+            { label: 'Active Signals', value: '90.0K' },
+            { label: 'Avg Sentiment', value: '+58.0%' },
+            { label: 'Trend Velocity', value: '↑ 7.8%' },
           ]}
-          accentColor="bg-gradient-to-br from-orange-500 to-orange-600"
-          onClick={() => handlePlatformClick('Reddit')}
+          accentColor="bg-gradient-to-br from-indigo-500 to-indigo-600"
+          onClick={() => handlePlatformClick('Social')}
         />
 
         {/* Telegram Card */}

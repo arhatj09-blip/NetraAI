@@ -23,7 +23,7 @@ export const Social3DMap: React.FC<Social3DMapProps> = ({
   const chartData = useMemo(() => {
     const defaultColors: Record<string, string> = {
       x: '#3b82f6',
-      reddit: '#f97316',
+      social: '#6366f1',
       telegram: '#0ea5e9',
     };
 

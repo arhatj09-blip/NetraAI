@@ -27,7 +27,7 @@ export const BenchmarkTable: React.FC = () => {
               </th>
               <th className="pb-4">
                 <span className="flex items-center gap-1.5 text-slate-900 dark:text-white">
-                  <MessageSquare className="w-4 h-4 text-orange-500" /> Reddit
+                  <MessageSquare className="w-4 h-4 text-indigo-500" /> Social Media Platforms
                 </span>
               </th>
               <th className="pb-4">
@@ -50,7 +50,7 @@ export const BenchmarkTable: React.FC = () => {
                   {row.xValue}
                 </td>
                 <td className="py-4 font-bold text-slate-900 dark:text-white mono text-xs sm:text-sm">
-                  {row.redditValue}
+                  {row.socialValue}
                 </td>
                 <td className="py-4 font-bold text-slate-900 dark:text-white mono text-xs sm:text-sm">
                   {row.telegramValue}
