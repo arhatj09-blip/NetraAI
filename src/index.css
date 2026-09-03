@@ -73,6 +73,17 @@ body {
   min-height: 100vh;
 }
 
+#modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  pointer-events: none;
+}
+
+#modal-root .hashtag-modal-backdrop {
+  pointer-events: auto;
+}
+
 .page-shell {
   animation: pageShellIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -203,6 +214,26 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   to   { opacity: 1; }
 }
 
+@keyframes hashtagModalIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes hashtagModalOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(6px) scale(0.985); }
+}
+
+@keyframes hashtagBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes hashtagBackdropOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 @keyframes floatY {
   0%, 100% { transform: translateY(0px);   }
   50%       { transform: translateY(-10px); }
@@ -244,6 +275,22 @@ input[type="date"]::-webkit-calendar-picker-indicator {
 }
 .land-dot-blink {
   animation: dotBlink 1.8s ease-in-out infinite;
+}
+
+.hashtag-modal-backdrop {
+  animation: hashtagBackdropIn 200ms ease-out both;
+}
+
+.hashtag-modal-backdrop--closing {
+  animation-name: hashtagBackdropOut;
+}
+
+.hashtag-modal-panel {
+  animation: hashtagModalIn 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hashtag-modal-panel--closing {
+  animation-name: hashtagModalOut;
 }
 
 /* Scrolling dot-grid background for landing hero */
@@ -327,4 +374,5 @@ a:active {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
 }

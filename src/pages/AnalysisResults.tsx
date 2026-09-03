@@ -1,16 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, TrendingUp, AlertTriangle, Target, Flame, MessageCircle, ShieldCheck, Lock, Twitter, BarChart3, Heart, Users, Shield } from 'lucide-react';
-import { Social3DMap } from '../components/crossPlatform/Social3DMap';
-import { SentimentTimeline } from '../components/crossPlatform/SentimentTimeline';
-import { EmotionalPulseBar } from '../components/platforms/EmotionalPulseBar';
 import { DateRangeFilter } from '../components/analysis/DateRangeFilter';
-import { sentimentTimelineData } from '../services/mockData';
+import { DynamicSocialNetwork } from '../components/network/DynamicSocialNetwork';
+import { AnalyticsTriPanel } from '../components/platforms/AnalyticsTriPanel';
+import { HashtagTrendModal } from '../components/platforms/HashtagTrendModal';
+import { xRisingHashtags, hashtagTrendIntelligence, XRisingHashtag } from '../services/mockData';
 
 export const AnalysisResults: React.FC = () => {
   const { platform, query } = useParams<{ platform?: string; query?: string }>();
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(false);
+  
+  // Hashtag Trend Intelligence modal state (X platform only)
+  const [selectedHashtag, setSelectedHashtag] = useState<XRisingHashtag | null>(null);
+
+  const openHashtagModal = (hashtag: XRisingHashtag) => setSelectedHashtag(hashtag);
+  const closeHashtagModal = () => setSelectedHashtag(null);
   
   // Universal date range state for entire analysis page
   const [activeDateRange, setActiveDateRange] = useState({
@@ -55,6 +61,25 @@ export const AnalysisResults: React.FC = () => {
     if (normalizedPlatform === 'x') {
       return (
         <div className="space-y-6">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
+                  Dynamic 3D Social Interaction Network
+                </h2>
+                <p className="text-sm text-slate-600 dark:text-slate-400">
+                  Interactive visualization of user interactions and relationship propagation across the selected period.
+                </p>
+              </div>
+              <span className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-[10px] font-bold uppercase tracking-wider rounded-full border border-blue-200 dark:border-blue-800">
+                X Network
+              </span>
+            </div>
+            <div className="bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 overflow-hidden shadow-inner">
+              <DynamicSocialNetwork isDark={isDark} startDate={activeDateRange.startDate} endDate={activeDateRange.endDate} />
+            </div>
+          </div>
+
           {/* X Platform Header */}
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
             <div className="flex items-center gap-4">
@@ -106,23 +131,33 @@ export const AnalysisResults: React.FC = () => {
                 Rising Hashtags
               </h3>
               <div className="space-y-3">
-                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">#AgentDev</span>
-                  <span className="text-sm font-bold text-emerald-500 mono">+242%</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">#AI_Safety</span>
-                  <span className="text-sm font-bold text-emerald-500 mono">+184%</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">#GPTNext</span>
-                  <span className="text-sm font-bold text-emerald-500 mono">+112%</span>
-                </div>
-                <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60">
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">#LLMOps</span>
-                  <span className="text-sm font-bold text-emerald-500 mono">+98%</span>
-                </div>
+                {xRisingHashtags.map((ht) => (
+                  <button
+                    key={ht.tag}
+                    onClick={() => openHashtagModal(ht)}
+                    className="w-full flex justify-between items-center p-3
+                               bg-slate-50 dark:bg-slate-800/40 rounded-xl
+                               border border-slate-200 dark:border-slate-700/60
+                               hover:border-blue-400 dark:hover:border-blue-500
+                               hover:bg-blue-50/50 dark:hover:bg-blue-500/10
+                               hover:shadow-sm
+                               transition-all duration-200 group text-left"
+                    title={`View trend intelligence for ${ht.tag}`}
+                  >
+                    <span className="text-sm font-bold text-slate-900 dark:text-white
+                                     group-hover:text-blue-600 dark:group-hover:text-blue-400
+                                     transition-colors">
+                      {ht.tag}
+                    </span>
+                    <span className="text-sm font-bold text-emerald-500 mono shrink-0">
+                      {ht.growth}
+                    </span>
+                  </button>
+                ))}
               </div>
+              <p className="mt-3 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                Click any hashtag to view detailed trend intelligence
+              </p>
             </div>
           </div>
         </div>
@@ -306,6 +341,7 @@ export const AnalysisResults: React.FC = () => {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] pt-8 pb-20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8">
         {/* Back Button */}
@@ -435,16 +471,16 @@ export const AnalysisResults: React.FC = () => {
           </div>
         )}
 
-        {/* 1. 3D Intelligence Vector Space Map - moved to the first major analytics section after the title header */}
-        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] gap-6 mb-12">
+        {/* Shared vector-space overview remains available to non-X platform views. */}
+        {platform?.toLowerCase() !== 'x' && <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)] gap-6 mb-12">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-                  Intelligence Vector Space Map
+                  Dynamic 3D Social Interaction Network
                 </h2>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  3D spatial clustering: Trend Velocity × Sentiment Score × Influence Index
+                  Interactive visualization of user relationships and interaction propagation across processed signals
                 </p>
               </div>
               <div className="flex items-center gap-3 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
@@ -460,7 +496,7 @@ export const AnalysisResults: React.FC = () => {
               </div>
             </div>
             <div className="bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 overflow-hidden shadow-inner">
-              <Social3DMap isDark={isDark} platform={platform as any || 'all'} height="h-[420px]" />
+              <DynamicSocialNetwork isDark={isDark} />
             </div>
           </div>
 
@@ -554,41 +590,26 @@ export const AnalysisResults: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* 2. Main Analysis Section - Platform Specific */}
         {renderMainAnalysisSection()}
 
-        {/* 3. Sentiment Dynamics Timeline */}
-        <div className="mt-12 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-              Sentiment Dynamics Timeline
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Historical sentiment flow across the selected platform
-            </p>
-          </div>
-          <SentimentTimeline 
-            isDark={isDark} 
-            timeline={sentimentTimelineData['24H']}
-            lineColor={platform === 'social' ? '#6366f1' : platform === 'telegram' ? '#0ea5e9' : '#3b82f6'}
-          />
-        </div>
-
-        {/* 4. Emotional Pulse Distribution */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
-              Emotional Pulse Distribution
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Emotional sentiment breakdown across detected signals
-            </p>
-          </div>
-          <EmotionalPulseBar isDark={isDark} />
-        </div>
+        {/* 3 & 4 & Demographics ─ two-column analytics panel */}
+        <AnalyticsTriPanel isDark={isDark} platform={platform} />
       </div>
     </div>
+
+    {/* ── Hashtag Trend Intelligence Modal (X platform only) ────────────────── */}
+    {selectedHashtag && hashtagTrendIntelligence[selectedHashtag.tag] && (
+      <HashtagTrendModal
+        hashtag={selectedHashtag}
+        data={hashtagTrendIntelligence[selectedHashtag.tag]}
+        dateRange={activeDateRange}
+        isDark={isDark}
+        onClose={closeHashtagModal}
+      />
+    )}
+    </>
   );
 };

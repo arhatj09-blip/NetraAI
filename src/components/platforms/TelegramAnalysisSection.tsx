@@ -1,6 +1,6 @@
 import React from 'react';
 import { Send, ShieldCheck, Lock } from 'lucide-react';
-import { Social3DMap } from '../crossPlatform/Social3DMap';
+import { DynamicSocialNetwork } from '../network/DynamicSocialNetwork';
 
 interface TelegramAnalysisSectionProps {
   isDark: boolean;
@@ -56,7 +56,7 @@ export const TelegramAnalysisSection: React.FC<TelegramAnalysisSectionProps> = (
         </div>
 
         <div className="bg-slate-50/50 dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-2 overflow-hidden shadow-inner">
-          <Social3DMap platform="telegram" isDark={isDark} height="h-[440px]" />
+          <DynamicSocialNetwork isDark={isDark} startDate={activeDateRange?.startDate} endDate={activeDateRange?.endDate} />
         </div>
       </div>
     </section>

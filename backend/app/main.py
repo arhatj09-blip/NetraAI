@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 
-from app.api import datasets, health, pipeline, platforms
+from app.api import datasets, health, network, pipeline, platforms
 
 # Load environment variables
 load_dotenv()
@@ -37,7 +37,7 @@ app = FastAPI(
 )
 
 # Configure CORS
-origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://localhost:5173").split(",")
+origins = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://localhost:3001,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173").split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -52,6 +52,7 @@ app.include_router(health.router, prefix="/api", tags=["Health"])
 app.include_router(pipeline.router, prefix="/api/pipeline", tags=["Pipeline"])
 app.include_router(platforms.router, prefix="/api", tags=["Platforms"])
 app.include_router(datasets.router, prefix="/api", tags=["Datasets"])
+app.include_router(network.router, prefix="/api", tags=["Network"])
 
 
 @app.get("/")

@@ -164,6 +164,121 @@ export const trendingTopicsData: TrendingTopicItem[] = [
   { tag: '#AgenticDesign', mentions: '4,320 mentions', growth: '+67%', status: 'Rising', score: 68, progressPercent: 45 },
 ];
 
+// ─── Rising Hashtags (X page panel) ──────────────────────────────────────────
+export interface XRisingHashtag {
+  tag: string;
+  growth: string;
+  mentions: string;
+  status: 'Rising' | 'Spiking' | 'Stable' | 'Declining';
+  velocity: string;
+}
+
+export const xRisingHashtags: XRisingHashtag[] = [
+  { tag: '#AgentDev',  growth: '+242%', mentions: '14,201', status: 'Spiking', velocity: '+1,840/hr' },
+  { tag: '#AI_Safety', growth: '+184%', mentions: '9,428',  status: 'Spiking', velocity: '+920/hr'  },
+  { tag: '#GPTNext',   growth: '+112%', mentions: '6,812',  status: 'Rising',  velocity: '+610/hr'  },
+  { tag: '#LLMOps',    growth: '+98%',  mentions: '5,120',  status: 'Rising',  velocity: '+480/hr'  },
+];
+
+// ─── Per-hashtag Trend Intelligence (popup data) ──────────────────────────────
+export interface HashtagTrendData {
+  /** Growth timeline points across the active date range */
+  timeline: SentimentTimelinePoint[];
+  /** Sentiment distribution for this hashtag */
+  sentiment: { positive: number; neutral: number; negative: number };
+  /** Emotion breakdown — same 7 emotions as emotionalPulseData */
+  emotions: { emotion: string; value: number }[];
+  /** Synthetic demographics — clearly labelled as prototype-generated */
+  syntheticDemographics: {
+    gender: { label: string; value: number; color: string }[];
+    ageGroups: { range: string; percentage: number }[];
+    regions: { region: string; percentage: number; color: string }[];
+  };
+}
+
+export const hashtagTrendIntelligence: Record<string, HashtagTrendData> = {
+  '#AgentDev': {
+    timeline: [
+      { time: 'Aug 01', value: 18 }, { time: 'Aug 05', value: 34 },
+      { time: 'Aug 09', value: 52 }, { time: 'Aug 13', value: 68 },
+      { time: 'Aug 17', value: 85 }, { time: 'Aug 21', value: 94 },
+      { time: 'Aug 25', value: 124 }, { time: 'Aug 27', value: 140 },
+    ],
+    sentiment: { positive: 74, neutral: 16, negative: 10 },
+    emotions: [
+      { emotion: 'Excitement', value: 91 }, { emotion: 'Curiosity', value: 76 },
+      { emotion: 'Support',    value: 68 }, { emotion: 'Anxiety',   value: 38 },
+      { emotion: 'Fear',       value: 22 }, { emotion: 'Sadness',   value: 14 },
+      { emotion: 'Anger',      value:  8 },
+    ],
+    syntheticDemographics: {
+      gender:    [{ label: 'Male', value: 72, color: '#3b82f6' }, { label: 'Female', value: 24, color: '#ec4899' }, { label: 'Other', value: 4, color: '#a855f7' }],
+      ageGroups: [{ range: '18-24', percentage: 38 }, { range: '25-34', percentage: 40 }, { range: '35-44', percentage: 16 }, { range: '45+', percentage: 6 }],
+      regions:   [{ region: 'North America', percentage: 44, color: '#3b82f6' }, { region: 'Europe', percentage: 28, color: '#6366f1' }, { region: 'Asia-Pacific', percentage: 18, color: '#10b981' }, { region: 'Other', percentage: 10, color: '#9ca3af' }],
+    },
+  },
+  '#AI_Safety': {
+    timeline: [
+      { time: 'Aug 01', value: 22 }, { time: 'Aug 05', value: 38 },
+      { time: 'Aug 09', value: 55 }, { time: 'Aug 13', value: 72 },
+      { time: 'Aug 17', value: 88 }, { time: 'Aug 21', value: 102 },
+      { time: 'Aug 25', value: 118 }, { time: 'Aug 27', value: 130 },
+    ],
+    sentiment: { positive: 52, neutral: 28, negative: 20 },
+    emotions: [
+      { emotion: 'Excitement', value: 48 }, { emotion: 'Curiosity', value: 82 },
+      { emotion: 'Support',    value: 60 }, { emotion: 'Anxiety',   value: 74 },
+      { emotion: 'Fear',       value: 58 }, { emotion: 'Sadness',   value: 32 },
+      { emotion: 'Anger',      value: 40 },
+    ],
+    syntheticDemographics: {
+      gender:    [{ label: 'Male', value: 58, color: '#3b82f6' }, { label: 'Female', value: 36, color: '#ec4899' }, { label: 'Other', value: 6, color: '#a855f7' }],
+      ageGroups: [{ range: '18-24', percentage: 28 }, { range: '25-34', percentage: 38 }, { range: '35-44', percentage: 22 }, { range: '45+', percentage: 12 }],
+      regions:   [{ region: 'North America', percentage: 36, color: '#3b82f6' }, { region: 'Europe', percentage: 34, color: '#6366f1' }, { region: 'Asia-Pacific', percentage: 20, color: '#10b981' }, { region: 'Other', percentage: 10, color: '#9ca3af' }],
+    },
+  },
+  '#GPTNext': {
+    timeline: [
+      { time: 'Aug 01', value: 10 }, { time: 'Aug 05', value: 28 },
+      { time: 'Aug 09', value: 44 }, { time: 'Aug 13', value: 62 },
+      { time: 'Aug 17', value: 78 }, { time: 'Aug 21', value: 88 },
+      { time: 'Aug 25', value: 98 }, { time: 'Aug 27', value: 110 },
+    ],
+    sentiment: { positive: 68, neutral: 20, negative: 12 },
+    emotions: [
+      { emotion: 'Excitement', value: 86 }, { emotion: 'Curiosity', value: 90 },
+      { emotion: 'Support',    value: 58 }, { emotion: 'Anxiety',   value: 42 },
+      { emotion: 'Fear',       value: 28 }, { emotion: 'Sadness',   value: 18 },
+      { emotion: 'Anger',      value: 12 },
+    ],
+    syntheticDemographics: {
+      gender:    [{ label: 'Male', value: 66, color: '#3b82f6' }, { label: 'Female', value: 28, color: '#ec4899' }, { label: 'Other', value: 6, color: '#a855f7' }],
+      ageGroups: [{ range: '18-24', percentage: 44 }, { range: '25-34', percentage: 36 }, { range: '35-44', percentage: 14 }, { range: '45+', percentage: 6 }],
+      regions:   [{ region: 'North America', percentage: 40, color: '#3b82f6' }, { region: 'Europe', percentage: 26, color: '#6366f1' }, { region: 'Asia-Pacific', percentage: 24, color: '#10b981' }, { region: 'Other', percentage: 10, color: '#9ca3af' }],
+    },
+  },
+  '#LLMOps': {
+    timeline: [
+      { time: 'Aug 01', value: 14 }, { time: 'Aug 05', value: 26 },
+      { time: 'Aug 09', value: 42 }, { time: 'Aug 13', value: 58 },
+      { time: 'Aug 17', value: 72 }, { time: 'Aug 21', value: 82 },
+      { time: 'Aug 25', value: 92 }, { time: 'Aug 27', value: 98 },
+    ],
+    sentiment: { positive: 72, neutral: 18, negative: 10 },
+    emotions: [
+      { emotion: 'Excitement', value: 78 }, { emotion: 'Curiosity', value: 88 },
+      { emotion: 'Support',    value: 64 }, { emotion: 'Anxiety',   value: 36 },
+      { emotion: 'Fear',       value: 20 }, { emotion: 'Sadness',   value: 16 },
+      { emotion: 'Anger',      value: 10 },
+    ],
+    syntheticDemographics: {
+      gender:    [{ label: 'Male', value: 76, color: '#3b82f6' }, { label: 'Female', value: 20, color: '#ec4899' }, { label: 'Other', value: 4, color: '#a855f7' }],
+      ageGroups: [{ range: '18-24', percentage: 32 }, { range: '25-34', percentage: 44 }, { range: '35-44', percentage: 18 }, { range: '45+', percentage: 6 }],
+      regions:   [{ region: 'North America', percentage: 48, color: '#3b82f6' }, { region: 'Europe', percentage: 24, color: '#6366f1' }, { region: 'Asia-Pacific', percentage: 20, color: '#10b981' }, { region: 'Other', percentage: 8, color: '#9ca3af' }],
+    },
+  },
+};
+
 export const emotionalPulseData = [
   { emotion: 'Excitement', value: 84 },
   { emotion: 'Curiosity', value: 72 },

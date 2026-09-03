@@ -6,15 +6,57 @@ interface EmotionalPulseBarProps {
   isDark: boolean;
   height?: string;
   color?: string;
+  /** 'h' = horizontal bars (default, legacy), 'v' = vertical bars */
+  orientation?: 'h' | 'v';
 }
+
+// Emotion colour palette — one distinct colour per emotion
+const EMOTION_COLORS = [
+  '#3b82f6', // Excitement – blue
+  '#8b5cf6', // Curiosity – violet
+  '#10b981', // Support – emerald
+  '#f59e0b', // Anxiety – amber
+  '#ef4444', // Fear – red
+  '#6366f1', // Sadness – indigo
+  '#f97316', // Anger – orange
+];
 
 export const EmotionalPulseBar: React.FC<EmotionalPulseBarProps> = ({
   isDark,
   height = 'h-[240px]',
   color = '#3b82f6',
+  orientation = 'h',
 }) => {
   const chartData = useMemo(() => {
-    // Reverse for horizontal bars from top to bottom
+    if (orientation === 'v') {
+      // Vertical bar chart — emotions on x-axis, values on y-axis
+      return [
+        {
+          x: emotionalPulseData.map((d) => d.emotion),
+          y: emotionalPulseData.map((d) => d.value),
+          type: 'bar' as const,
+          orientation: 'v' as const,
+          marker: {
+            color: emotionalPulseData.map((_, i) => EMOTION_COLORS[i % EMOTION_COLORS.length]),
+            opacity: 0.9,
+            line: {
+              color: 'rgba(255,255,255,0.15)',
+              width: 1,
+            },
+          },
+          text: emotionalPulseData.map((d) => `${d.value}%`),
+          textposition: 'outside' as const,
+          textfont: {
+            family: 'JetBrains Mono, monospace',
+            size: 10,
+            color: isDark ? '#f1f5f9' : '#1e293b',
+          },
+          hovertemplate: '<b>%{x}</b><br>%{y}%<extra></extra>',
+        },
+      ];
+    }
+
+    // Horizontal bars (original behaviour)
     const reversed = [...emotionalPulseData].reverse();
     return [
       {
@@ -34,11 +76,39 @@ export const EmotionalPulseBar: React.FC<EmotionalPulseBarProps> = ({
         },
       },
     ];
-  }, [color]);
+  }, [color, orientation, isDark]);
 
   const layout = useMemo(() => {
     const gridColor = isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.05)';
     const textColor = isDark ? '#94a3b8' : '#64748b';
+
+    if (orientation === 'v') {
+      return {
+        paper_bgcolor: 'rgba(0,0,0,0)',
+        plot_bgcolor: 'rgba(0,0,0,0)',
+        font: {
+          color: textColor,
+          family: 'Plus Jakarta Sans, sans-serif',
+          size: 10,
+        },
+        margin: { l: 30, r: 15, t: 28, b: 55 },
+        showlegend: false,
+        xaxis: {
+          gridcolor: 'transparent',
+          zeroline: false,
+          tickfont: { color: isDark ? '#cbd5e1' : '#334155', size: 10 },
+          tickangle: -20,
+        },
+        yaxis: {
+          gridcolor: gridColor,
+          zeroline: false,
+          tickfont: { color: textColor },
+          range: [0, 100],
+          ticksuffix: '%',
+        },
+        bargap: 0.28,
+      };
+    }
 
     return {
       paper_bgcolor: 'rgba(0,0,0,0)',
@@ -62,7 +132,7 @@ export const EmotionalPulseBar: React.FC<EmotionalPulseBarProps> = ({
         tickfont: { color: isDark ? '#f1f5f9' : '#1e293b', size: 11, weight: 600 },
       },
     };
-  }, [isDark]);
+  }, [isDark, orientation]);
 
   return (
     <div className={`w-full ${height}`}>

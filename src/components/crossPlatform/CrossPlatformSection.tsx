@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Twitter, MessageSquare, Send, Globe, TrendingUp } from 'lucide-react';
 import { MetricsGrid } from './MetricsGrid';
-import { Social3DMap } from './Social3DMap';
+import { DynamicSocialNetwork } from '../network/DynamicSocialNetwork';
 import { SentimentDonut } from './SentimentDonut';
 import { SentimentTimeline } from './SentimentTimeline';
 import { PlatformVarianceBar } from './PlatformVarianceBar';
@@ -45,7 +45,7 @@ export const CrossPlatformSection: React.FC<CrossPlatformSectionProps> = ({
             Unified Social Signals Dashboard
           </h2>
           <p className="text-slate-500 dark:text-slate-400 text-sm">
-            Continuous ingestion & signal vector space across X (Twitter) and social media platforms
+            Processed interaction intelligence across X (Twitter), Reddit, and Telegram
           </p>
         </div>
 
@@ -97,15 +97,15 @@ export const CrossPlatformSection: React.FC<CrossPlatformSectionProps> = ({
       {/* KPI Metrics Grid */}
       <MetricsGrid metrics={currentMetrics} />
 
-      {/* 3D Social Intelligence Vector Map */}
+      {/* Dynamic interaction network */}
       <div className="card-base rounded-[2.5rem] p-6 sm:p-8 transition-colors">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div>
             <h3 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              3D Social Intelligence Vector Space Map
+              Dynamic 3D Social Interaction Network
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Vector space mapping of trending clusters (Trend Velocity × Sentiment Score × Influence Index)
+              Interactive visualization of user relationships and interaction propagation across processed signals
             </p>
           </div>
           <div className="flex items-center gap-4 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
@@ -122,7 +122,7 @@ export const CrossPlatformSection: React.FC<CrossPlatformSectionProps> = ({
         </div>
 
         <div className="bg-slate-50/50 dark:bg-slate-900/30 rounded-3xl border border-slate-200 dark:border-slate-800 p-2 overflow-hidden shadow-inner">
-          <Social3DMap platform={selectedPlatform} isDark={isDark} height="h-[520px]" />
+          <DynamicSocialNetwork isDark={isDark} />
         </div>
       </div>
 

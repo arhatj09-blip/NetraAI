@@ -1,6 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import Plotly from 'plotly.js-dist-min';
 
+const DEFAULT_PLOTLY_CONFIG: Partial<Plotly.Config> = {
+  responsive: true,
+  displayModeBar: false,
+};
+
 export interface PlotlyChartProps {
   data: Plotly.Data[];
   layout: Partial<Plotly.Layout>;
@@ -12,7 +17,7 @@ export interface PlotlyChartProps {
 export const PlotlyChart: React.FC<PlotlyChartProps> = ({
   data,
   layout,
-  config = { responsive: true, displayModeBar: false },
+  config = DEFAULT_PLOTLY_CONFIG,
   className = 'w-full h-full min-h-[250px]',
   style,
 }) => {

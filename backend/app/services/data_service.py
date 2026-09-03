@@ -6,7 +6,7 @@ from pathlib import Path
 from app.preprocessing.telegram import preprocess_telegram_dataset
 from app.preprocessing.x import preprocess_x_dataset
 
-BASE_DIR = Path(__file__).resolve().parents[2] / "data"
+DATA_ROOT = Path(__file__).resolve().parents[3] / "data"
 
 
 @lru_cache(maxsize=8)

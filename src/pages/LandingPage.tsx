@@ -20,7 +20,7 @@ import {
   Radio,
 } from 'lucide-react';
 import { useTheme } from '../hooks/useTheme';
-import { Social3DMap } from '../components/crossPlatform/Social3DMap';
+import { DynamicSocialNetwork } from '../components/network/DynamicSocialNetwork';
 
 /* ─────────────────────────────────────────────────────────────────────────────
    CONSTANTS & CONFIG
@@ -413,7 +413,7 @@ export const LandingPage: React.FC = () => {
         </div>
       </section>
 
-      {/* ── 3-D VECTOR SPACE HIGHLIGHT ───────────────────────────────────────── */}
+      {/* ── 3-D INTERACTION NETWORK HIGHLIGHT ───────────────────────────────── */}
       <section className="px-4 py-12 sm:py-14 border-t border-slate-200/60 dark:border-slate-800/60">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
@@ -424,40 +424,16 @@ export const LandingPage: React.FC = () => {
                 <SectionBadge>Differentiating Feature</SectionBadge>
                 <h2 className="mt-3 text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white
                                tracking-tight leading-snug">
-                  3D Intelligence<br />Vector Space
+                  Dynamic 3D Social<br />Interaction Network
                 </h2>
               </Reveal>
               <Reveal delay={60}>
                 <p className="mt-3 text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
-                  Every processed topic is mapped in a three-dimensional coordinate space defined by{' '}
-                  <strong className="text-slate-800 dark:text-slate-200">Trend Velocity</strong>,{' '}
-                  <strong className="text-slate-800 dark:text-slate-200">Sentiment Score</strong>, and{' '}
-                  <strong className="text-slate-800 dark:text-slate-200">Influence Index</strong>.
+                  Users are represented as nodes and their interactions as edges, creating an interactive view of relationship propagation across processed X signals.
                 </p>
                 <p className="mt-2 text-slate-600 dark:text-slate-400 text-xs sm:text-sm leading-relaxed">
-                  Spatial clustering exposes relationships that flat dashboards cannot — revealing which narratives are gaining velocity, which carry high emotion, and where authority nodes converge.
+                  Fixed 3D positioning keeps the network stable while the replay timeline reveals how interactions accumulate over the selected period.
                 </p>
-              </Reveal>
-
-              <Reveal delay={120}>
-                <div className="mt-6 space-y-2.5">
-                  {[
-                    { axis: 'X axis', label: 'Trend Velocity', color: 'bg-blue-500' },
-                    { axis: 'Y axis', label: 'Sentiment Score', color: 'bg-emerald-500' },
-                    { axis: 'Z axis', label: 'Influence Index', color: 'bg-violet-500' },
-                  ].map((item) => (
-                    <div key={item.axis} className="flex items-center gap-3">
-                      <div className={`w-2 h-2 rounded-full shrink-0 ${item.color}`} />
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 w-14">
-                        {item.axis}
-                      </span>
-                      <div className="flex-1 h-px bg-slate-200 dark:bg-slate-700" />
-                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-                        {item.label}
-                      </span>
-                    </div>
-                  ))}
-                </div>
               </Reveal>
 
               <Reveal delay={180}>
@@ -486,7 +462,7 @@ export const LandingPage: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 land-dot-blink" />
                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                      Analytical Vector Space
+                      Dynamic Interaction Network
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-[9px] uppercase font-bold text-slate-400">
@@ -498,7 +474,7 @@ export const LandingPage: React.FC = () => {
                 {/* Map */}
                 <div className="p-2">
                   {mapVisible ? (
-                    <Social3DMap isDark={isDark} platform="all" height="h-[330px]" />
+                    <DynamicSocialNetwork isDark={isDark} />
                   ) : (
                     <div className="h-[330px] flex items-center justify-center">
                       <div className="w-7 h-7 rounded-full border-2 border-blue-500 border-t-transparent animate-spin" />
@@ -655,7 +631,7 @@ export const LandingPage: React.FC = () => {
                 Ready to explore the intelligence?
               </h2>
               <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm max-w-md mx-auto mb-8 leading-relaxed">
-                Open the dashboard to explore pipeline status, platform analytics, the analytical vector space,
+                Open the dashboard to explore pipeline status, platform analytics, the dynamic interaction network,
                 and the search interface across processed social signals.
               </p>
 
