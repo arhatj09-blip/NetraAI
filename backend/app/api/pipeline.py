@@ -3,8 +3,9 @@ Pipeline Status Endpoint
 """
 
 from fastapi import APIRouter
-from datetime import datetime, timedelta
+from datetime import datetime
 from app.models.responses import PipelineStatusResponse
+from app.services.ingestion_service import get_ingestion_state
 
 router = APIRouter()
 
@@ -20,22 +21,21 @@ async def get_pipeline_status():
     Returns:
         PipelineStatusResponse: Current pipeline status and metrics
     """
-    # Placeholder values for Phase 1
-    # These will be replaced with actual pipeline metrics later
-    current_time = datetime.utcnow()
-    
+    state = get_ingestion_state()
+    current_time = datetime.now().astimezone()
+    last_ingestion = state["last_ingestion"] or current_time
+    next_refresh = state["next_refresh"] or current_time
+    platform_records = state["platform_records"]
+    status = "error" if state["error"] else "operational"
+
     return PipelineStatusResponse(
-        status="operational",
-        message="Continuous Ingestion Engine v2.4",
-        last_ingestion=current_time - timedelta(minutes=15),
-        next_refresh=current_time + timedelta(minutes=8, seconds=42),
-        records_processed=274392,
-        analytics_updated=current_time - timedelta(minutes=5),
-        health_index=99.8,
-        active_platforms=["X", "Reddit", "Telegram"],
-        platform_records={
-            "X": 124392,
-            "Reddit": 87201,
-            "Telegram": 62799
-        }
+        status=status,
+        message="Scheduled dataset ingestion" if not state["error"] else state["error"],
+        last_ingestion=last_ingestion,
+        next_refresh=next_refresh,
+        records_processed=sum(platform_records.values()),
+        analytics_updated=state["analytics_updated"] or last_ingestion,
+        health_index=100.0 if not state["error"] else 0.0,
+        active_platforms=[platform.upper() for platform in platform_records],
+        platform_records={platform.upper(): count for platform, count in platform_records.items()}
     )

@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     data_path_telegram: str = "../data/telegram"
     
     # Pipeline
-    pipeline_refresh_interval: int = 600  # seconds
+    pipeline_refresh_interval: int = 900  # seconds
     batch_size: int = 1000
     
     class Config:

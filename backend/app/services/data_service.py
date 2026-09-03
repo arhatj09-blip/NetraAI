@@ -25,3 +25,12 @@ def get_processed_dataset(platform: str):
     if platform_key == "telegram":
         return preprocess_telegram_dataset(file_path)
     return preprocess_x_dataset(file_path)
+
+
+def refresh_processed_datasets() -> dict[str, int]:
+    """Reload supported datasets and return their processed record counts."""
+    get_processed_dataset.cache_clear()
+    return {
+        platform: int(get_processed_dataset(platform)["total_records"])
+        for platform in ("x", "telegram")
+    }

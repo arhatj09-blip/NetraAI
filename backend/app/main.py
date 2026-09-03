@@ -6,10 +6,12 @@ Phase 1 Prototype: Historical Data Processing & Analytics
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+import asyncio
 import os
 from dotenv import load_dotenv
 
 from app.api import datasets, health, network, pipeline, platforms
+from app.services.ingestion_service import refresh_now, run_ingestion_worker
 
 # Load environment variables
 load_dotenv()
@@ -21,7 +23,14 @@ async def lifespan(app: FastAPI):
     print("🚀 NetraAI Backend starting...")
     print(f"📊 Environment: {os.getenv('ENVIRONMENT', 'development')}")
     print(f"🔗 API Base URL: {os.getenv('API_BASE_URL', 'http://localhost:8000')}")
+    stop_event = asyncio.Event()
+    await asyncio.to_thread(refresh_now)
+    worker_task = asyncio.create_task(run_ingestion_worker(stop_event))
+    app.state.ingestion_stop_event = stop_event
+    app.state.ingestion_worker = worker_task
     yield
+    stop_event.set()
+    await worker_task
     print("👋 NetraAI Backend shutting down...")
 
 
