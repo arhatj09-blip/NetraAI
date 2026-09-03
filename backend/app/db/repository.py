@@ -3,11 +3,20 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Sequence
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from .models import XHashtagTrend, XPipelineRun, XPost
+from .models import (
+    XEmotionAnalytics,
+    XHashtagTrend,
+    XNetworkEdge,
+    XNetworkEvent,
+    XNetworkNode,
+    XPipelineRun,
+    XPost,
+    XSentimentAnalytics,
+)
 
 
 class XPostRepository:
@@ -67,6 +76,56 @@ class XPostRepository:
         self.session.commit()
         self.session.refresh(post)
         return post
+
+    def update_ml_fields_batch(self, ml_data: list[dict[str, object]]) -> int:
+        """
+        Batch update ML/NLP enrichment fields (sentiment, emotion, topic) in x_posts.
+        Chunked in batches of 1,000 to maximize performance without lock contention.
+        """
+        if not ml_data:
+            return 0
+
+        self.session.expunge_all()
+        total_updated = 0
+        now_utc = datetime.now(timezone.utc)
+        chunk_size = 1000
+
+        for i in range(0, len(ml_data), chunk_size):
+            chunk = ml_data[i : i + chunk_size]
+            for item in chunk:
+                self.session.execute(
+                    update(XPost)
+                    .where(XPost.post_id == str(item["post_id"]))
+                    .values(
+                        sentiment=item.get("sentiment"),
+                        sentiment_confidence=item.get("sentiment_confidence"),
+                        emotion=item.get("emotion"),
+                        emotion_confidence=item.get("emotion_confidence"),
+                        emotion_source=item.get("emotion_source"),
+                        topic=item.get("topic"),
+                        topic_probability=item.get("topic_probability"),
+                        updated_at=now_utc,
+                    )
+                )
+                total_updated += 1
+            self.session.commit()
+
+        return total_updated
+
+    def get_posts_missing_ml(self, limit: int | None = None) -> list[XPost]:
+        """Fetch posts where one or more ML enrichment fields are missing."""
+        stmt = select(XPost).where(
+            (XPost.sentiment.is_(None))
+            | (XPost.emotion.is_(None))
+            | (XPost.topic.is_(None))
+        ).order_by(XPost.id.asc())
+        if limit:
+            stmt = stmt.limit(limit)
+        return list(self.session.scalars(stmt).all())
+
+    def get_all_posts(self) -> list[XPost]:
+        """Fetch all posts ordered by ID."""
+        return list(self.session.scalars(select(XPost).order_by(XPost.id.asc())).all())
 
 
 class XPipelineRunRepository:
@@ -378,4 +437,409 @@ class XHashtagTrendRepository:
             "trend_score": round(float(peak_score or 0.0), 2),
             "trend_status": latest_status,
             "time_series": time_series,
-        }
+        }
+
+
+class XSentimentAnalyticsRepository:
+    """Persistence and query boundary for sentiment analytics rollups."""
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def upsert_sentiment(self, sentiment_data: list[dict[str, Any]]) -> int:
+        """
+        Upsert sentiment rollups matching on time_period.
+        Idempotent and atomic across MySQL and SQLite.
+        """
+        if not sentiment_data:
+            return 0
+
+        dialect_name = self.session.bind.dialect.name if self.session.bind else "mysql"
+        chunk_size = 1000
+        total_upserted = 0
+
+        for i in range(0, len(sentiment_data), chunk_size):
+            chunk = sentiment_data[i : i + chunk_size]
+            if dialect_name == "mysql":
+                from sqlalchemy.dialects.mysql import insert as mysql_insert
+
+                stmt = mysql_insert(XSentimentAnalytics).values(chunk)
+                update_cols = {
+                    "positive_posts": stmt.inserted.positive_posts,
+                    "negative_posts": stmt.inserted.negative_posts,
+                    "neutral_posts": stmt.inserted.neutral_posts,
+                    "positive_percentage": stmt.inserted.positive_percentage,
+                    "negative_percentage": stmt.inserted.negative_percentage,
+                    "neutral_percentage": stmt.inserted.neutral_percentage,
+                    "average_confidence": stmt.inserted.average_confidence,
+                }
+                upsert_stmt = stmt.on_duplicate_key_update(update_cols)
+                self.session.execute(upsert_stmt)
+            elif dialect_name == "sqlite":
+                from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+                stmt = sqlite_insert(XSentimentAnalytics).values(chunk)
+                update_cols = {
+                    "positive_posts": stmt.excluded.positive_posts,
+                    "negative_posts": stmt.excluded.negative_posts,
+                    "neutral_posts": stmt.excluded.neutral_posts,
+                    "positive_percentage": stmt.excluded.positive_percentage,
+                    "negative_percentage": stmt.excluded.negative_percentage,
+                    "neutral_percentage": stmt.excluded.neutral_percentage,
+                    "average_confidence": stmt.excluded.average_confidence,
+                }
+                upsert_stmt = stmt.on_conflict_do_update(
+                    index_elements=["time_period"],
+                    set_=update_cols,
+                )
+                self.session.execute(upsert_stmt)
+            else:
+                for item in chunk:
+                    existing = self.session.scalar(
+                        select(XSentimentAnalytics).where(
+                            XSentimentAnalytics.time_period == item["time_period"]
+                        )
+                    )
+                    if existing:
+                        for k, v in item.items():
+                            setattr(existing, k, v)
+                    else:
+                        self.session.add(XSentimentAnalytics(**item))
+
+            total_upserted += len(chunk)
+
+        self.session.commit()
+        return total_upserted
+
+    def get_sentiment_analytics(
+        self,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> list[dict[str, Any]]:
+        """Query chronological sentiment analytics."""
+        stmt = select(XSentimentAnalytics).order_by(XSentimentAnalytics.time_period.asc())
+        if start_date:
+            stmt = stmt.where(XSentimentAnalytics.time_period >= start_date)
+        if end_date:
+            stmt = stmt.where(XSentimentAnalytics.time_period <= end_date)
+
+        rows = self.session.scalars(stmt).all()
+        return [
+            {
+                "time_period": r.time_period.isoformat() if hasattr(r.time_period, "isoformat") else str(r.time_period),
+                "positive_posts": r.positive_posts,
+                "negative_posts": r.negative_posts,
+                "neutral_posts": r.neutral_posts,
+                "positive_percentage": r.positive_percentage,
+                "negative_percentage": r.negative_percentage,
+                "neutral_percentage": r.neutral_percentage,
+                "average_confidence": r.average_confidence,
+            }
+            for r in rows
+        ]
+
+
+class XEmotionAnalyticsRepository:
+    """Persistence and query boundary for emotion analytics rollups."""
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def upsert_emotions(self, emotion_data: list[dict[str, Any]]) -> int:
+        """
+        Upsert emotion rollups matching on (time_period, emotion).
+        Guarantees zero duplicate rows at DB and application levels.
+        """
+        if not emotion_data:
+            return 0
+
+        dialect_name = self.session.bind.dialect.name if self.session.bind else "mysql"
+        chunk_size = 1000
+        total_upserted = 0
+
+        for i in range(0, len(emotion_data), chunk_size):
+            chunk = emotion_data[i : i + chunk_size]
+            if dialect_name == "mysql":
+                from sqlalchemy.dialects.mysql import insert as mysql_insert
+
+                stmt = mysql_insert(XEmotionAnalytics).values(chunk)
+                update_cols = {
+                    "post_count": stmt.inserted.post_count,
+                    "percentage": stmt.inserted.percentage,
+                    "average_confidence": stmt.inserted.average_confidence,
+                }
+                upsert_stmt = stmt.on_duplicate_key_update(update_cols)
+                self.session.execute(upsert_stmt)
+            elif dialect_name == "sqlite":
+                from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+                stmt = sqlite_insert(XEmotionAnalytics).values(chunk)
+                update_cols = {
+                    "post_count": stmt.excluded.post_count,
+                    "percentage": stmt.excluded.percentage,
+                    "average_confidence": stmt.excluded.average_confidence,
+                }
+                upsert_stmt = stmt.on_conflict_do_update(
+                    index_elements=["time_period", "emotion"],
+                    set_=update_cols,
+                )
+                self.session.execute(upsert_stmt)
+            else:
+                for item in chunk:
+                    existing = self.session.scalar(
+                        select(XEmotionAnalytics).where(
+                            XEmotionAnalytics.time_period == item["time_period"],
+                            XEmotionAnalytics.emotion == item["emotion"],
+                        )
+                    )
+                    if existing:
+                        for k, v in item.items():
+                            setattr(existing, k, v)
+                    else:
+                        self.session.add(XEmotionAnalytics(**item))
+
+            total_upserted += len(chunk)
+
+        self.session.commit()
+        return total_upserted
+
+    def get_emotion_analytics(
+        self,
+        start_date: datetime | None = None,
+        end_date: datetime | None = None,
+    ) -> list[dict[str, Any]]:
+        """Query emotion breakdown over time."""
+        stmt = select(XEmotionAnalytics).order_by(
+            XEmotionAnalytics.time_period.asc(), XEmotionAnalytics.post_count.desc()
+        )
+        if start_date:
+            stmt = stmt.where(XEmotionAnalytics.time_period >= start_date)
+        if end_date:
+            stmt = stmt.where(XEmotionAnalytics.time_period <= end_date)
+
+        rows = self.session.scalars(stmt).all()
+        return [
+            {
+                "time_period": r.time_period.isoformat() if hasattr(r.time_period, "isoformat") else str(r.time_period),
+                "emotion": r.emotion,
+                "post_count": r.post_count,
+                "percentage": r.percentage,
+                "average_confidence": r.average_confidence,
+            }
+            for r in rows
+        ]
+
+
+class XNetworkRepository:
+    """Persistence boundary for interaction events, nodes, and edges."""
+
+    def __init__(self, session: Session):
+        self.session = session
+
+    def upsert_events(self, events_data: list[dict[str, Any]]) -> int:
+        """Insert interaction events, ignoring existing event_ids for idempotency."""
+        if not events_data:
+            return 0
+
+        dialect_name = self.session.bind.dialect.name if self.session.bind else "mysql"
+        chunk_size = 1000
+        total_upserted = 0
+
+        for i in range(0, len(events_data), chunk_size):
+            chunk = events_data[i : i + chunk_size]
+            if dialect_name == "mysql":
+                from sqlalchemy.dialects.mysql import insert as mysql_insert
+
+                stmt = mysql_insert(XNetworkEvent).values(chunk)
+                upsert_stmt = stmt.on_duplicate_key_update(
+                    timestamp=stmt.inserted.timestamp
+                )
+                self.session.execute(upsert_stmt)
+            elif dialect_name == "sqlite":
+                from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+                stmt = sqlite_insert(XNetworkEvent).values(chunk)
+                upsert_stmt = stmt.on_conflict_do_nothing(index_elements=["event_id"])
+                self.session.execute(upsert_stmt)
+            else:
+                for item in chunk:
+                    existing = self.session.scalar(
+                        select(XNetworkEvent).where(XNetworkEvent.event_id == item["event_id"])
+                    )
+                    if not existing:
+                        self.session.add(XNetworkEvent(**item))
+
+            total_upserted += len(chunk)
+
+        self.session.commit()
+        return total_upserted
+
+    def upsert_nodes(self, nodes_data: list[dict[str, Any]]) -> int:
+        """Upsert network node topology metrics and coordinates matching on user_id."""
+        if not nodes_data:
+            return 0
+
+        dialect_name = self.session.bind.dialect.name if self.session.bind else "mysql"
+        chunk_size = 1000
+        total_upserted = 0
+
+        for i in range(0, len(nodes_data), chunk_size):
+            chunk = nodes_data[i : i + chunk_size]
+            if dialect_name == "mysql":
+                from sqlalchemy.dialects.mysql import insert as mysql_insert
+
+                stmt = mysql_insert(XNetworkNode).values(chunk)
+                update_cols = {
+                    "username": stmt.inserted.username,
+                    "activity": stmt.inserted.activity,
+                    "degree": stmt.inserted.degree,
+                    "followers_count": stmt.inserted.followers_count,
+                    "verified": stmt.inserted.verified,
+                    "pagerank": stmt.inserted.pagerank,
+                    "betweenness": stmt.inserted.betweenness,
+                    "layout_x": stmt.inserted.layout_x,
+                    "layout_y": stmt.inserted.layout_y,
+                    "layout_z": stmt.inserted.layout_z,
+                }
+                upsert_stmt = stmt.on_duplicate_key_update(update_cols)
+                self.session.execute(upsert_stmt)
+            elif dialect_name == "sqlite":
+                from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+                stmt = sqlite_insert(XNetworkNode).values(chunk)
+                update_cols = {
+                    "username": stmt.excluded.username,
+                    "activity": stmt.excluded.activity,
+                    "degree": stmt.excluded.degree,
+                    "followers_count": stmt.excluded.followers_count,
+                    "verified": stmt.excluded.verified,
+                    "pagerank": stmt.excluded.pagerank,
+                    "betweenness": stmt.excluded.betweenness,
+                    "layout_x": stmt.excluded.layout_x,
+                    "layout_y": stmt.excluded.layout_y,
+                    "layout_z": stmt.excluded.layout_z,
+                }
+                upsert_stmt = stmt.on_conflict_do_update(
+                    index_elements=["user_id"],
+                    set_=update_cols,
+                )
+                self.session.execute(upsert_stmt)
+            else:
+                for item in chunk:
+                    existing = self.session.scalar(
+                        select(XNetworkNode).where(XNetworkNode.user_id == item["user_id"])
+                    )
+                    if existing:
+                        for k, v in item.items():
+                            setattr(existing, k, v)
+                    else:
+                        self.session.add(XNetworkNode(**item))
+
+            total_upserted += len(chunk)
+
+        self.session.commit()
+        return total_upserted
+
+    def upsert_edges(self, edges_data: list[dict[str, Any]]) -> int:
+        """Upsert network edges matching on (source_user_id, target_user_id, interaction_type)."""
+        if not edges_data:
+            return 0
+
+        dialect_name = self.session.bind.dialect.name if self.session.bind else "mysql"
+        chunk_size = 1000
+        total_upserted = 0
+
+        for i in range(0, len(edges_data), chunk_size):
+            chunk = edges_data[i : i + chunk_size]
+            if dialect_name == "mysql":
+                from sqlalchemy.dialects.mysql import insert as mysql_insert
+
+                stmt = mysql_insert(XNetworkEdge).values(chunk)
+                update_cols = {
+                    "weight": stmt.inserted.weight,
+                    "first_seen_at": stmt.inserted.first_seen_at,
+                    "last_seen_at": stmt.inserted.last_seen_at,
+                }
+                upsert_stmt = stmt.on_duplicate_key_update(update_cols)
+                self.session.execute(upsert_stmt)
+            elif dialect_name == "sqlite":
+                from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+                stmt = sqlite_insert(XNetworkEdge).values(chunk)
+                update_cols = {
+                    "weight": stmt.excluded.weight,
+                    "first_seen_at": stmt.excluded.first_seen_at,
+                    "last_seen_at": stmt.excluded.last_seen_at,
+                }
+                upsert_stmt = stmt.on_conflict_do_update(
+                    index_elements=["source_user_id", "target_user_id", "interaction_type"],
+                    set_=update_cols,
+                )
+                self.session.execute(upsert_stmt)
+            else:
+                for item in chunk:
+                    existing = self.session.scalar(
+                        select(XNetworkEdge).where(
+                            XNetworkEdge.source_user_id == item["source_user_id"],
+                            XNetworkEdge.target_user_id == item["target_user_id"],
+                            XNetworkEdge.interaction_type == item["interaction_type"],
+                        )
+                    )
+                    if existing:
+                        for k, v in item.items():
+                            setattr(existing, k, v)
+                    else:
+                        self.session.add(XNetworkEdge(**item))
+
+            total_upserted += len(chunk)
+
+        self.session.commit()
+        return total_upserted
+
+    def get_network_graph(self, top_n: int = 50) -> dict[str, Any]:
+        """Fetch precomputed network graph payload for visualization."""
+        nodes = list(
+            self.session.scalars(
+                select(XNetworkNode).order_by(XNetworkNode.activity.desc()).limit(top_n)
+            ).all()
+        )
+        node_ids = {n.user_id for n in nodes}
+
+        edges = list(
+            self.session.scalars(
+                select(XNetworkEdge).where(
+                    XNetworkEdge.source_user_id.in_(list(node_ids)),
+                    XNetworkEdge.target_user_id.in_(list(node_ids)),
+                )
+            ).all()
+        )
+
+        return {
+            "nodes": [
+                {
+                    "id": n.user_id,
+                    "user_id": n.user_id,
+                    "username": n.username,
+                    "activity": n.activity,
+                    "degree": n.degree,
+                    "followers_count": n.followers_count,
+                    "verified": n.verified,
+                    "pagerank": n.pagerank,
+                    "betweenness": n.betweenness,
+                    "x": n.layout_x,
+                    "y": n.layout_y,
+                    "z": n.layout_z,
+                }
+                for n in nodes
+            ],
+            "edges": [
+                {
+                    "source": e.source_user_id,
+                    "target": e.target_user_id,
+                    "type": e.interaction_type,
+                    "weight": e.weight,
+                }
+                for e in edges
+            ],
+        }
+

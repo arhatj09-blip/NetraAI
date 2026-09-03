@@ -199,6 +199,28 @@ def backfill_hashtag_trends(session: Session, period_hours: int = 1) -> dict[str
     }
 
 
+def update_hashtag_trends_from_posts(
+    session: Session,
+    posts_data: list[dict[str, Any]],
+    period_hours: int = 1,
+) -> int:
+    """
+    Incremental update for hashtag trends given a list of newly ingested post dicts.
+    """
+    if not posts_data:
+        return 0
+    posts_tuples = [
+        (p["timestamp"], p["user_id"], p.get("hashtags"))
+        for p in posts_data
+        if p.get("hashtags") and p.get("timestamp") and p.get("user_id")
+    ]
+    if not posts_tuples:
+        return 0
+    trend_records = extract_and_calculate_trends(posts_tuples, period_hours=period_hours)
+    repo = XHashtagTrendRepository(session)
+    return repo.upsert_trends(trend_records)
+
+
 def parse_filter_datetime(dt_val: str | datetime | None) -> datetime | None:
     """Parses date string (e.g. '2026-08-01') or datetime to timezone-aware datetime."""
     if dt_val is None:

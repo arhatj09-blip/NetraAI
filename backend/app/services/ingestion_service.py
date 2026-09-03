@@ -21,6 +21,11 @@ from app.preprocessing.common import (
     normalize_timestamp_series,
 )
 from app.preprocessing.x import REQUIRED_COLUMNS
+from app.services.emotion_service import rollup_emotions_from_posts
+from app.services.hashtag_service import update_hashtag_trends_from_posts
+from app.services.ml_service import analyze_batch
+from app.services.network_persist_service import update_network_from_posts
+from app.services.sentiment_service import rollup_sentiment_from_posts
 
 logger = logging.getLogger(__name__)
 
@@ -370,7 +375,7 @@ def run_x_ingestion_cycle(
     source_name = target_path.name
     now_utc = datetime.now(timezone.utc)
     effective_sub_batch_size = processing_batch_size or settings.processing_batch_size
-    enricher = ml_enrichment_fn or default_ml_enrichment_interface
+    enricher = ml_enrichment_fn or analyze_batch
 
     try:
         # 1. Select all newly available records for this logical window
@@ -424,23 +429,32 @@ def run_x_ingestion_cycle(
                 "message": "Empty logical window completed with 0 records.",
             }
 
-        # 4. Internal Sub-Batching Execution
+        # 4. ML/NLP Enrichment across the complete logical cycle corpus
         posts_data = [_row_to_x_post_dict(row, dataset_source=source_name) for _, row in new_df.iterrows()]
-        sub_batches_count = 0
+        logger.info("Running ML enrichment on %d records for cycle %s...", len(posts_data), cycle_id)
+        enriched_posts = enricher(posts_data)
 
+        # 5. Internal Sub-Batching Persistence into x_posts
+        sub_batches_count = 0
         for start_idx in range(0, records_count, effective_sub_batch_size):
-            sub_batch = posts_data[start_idx : start_idx + effective_sub_batch_size]
-            enriched_sub_batch = enricher(sub_batch)
-            post_repo.add_all(enriched_sub_batch)
+            sub_batch = enriched_posts[start_idx : start_idx + effective_sub_batch_size]
+            post_repo.add_all(sub_batch)
             sub_batches_count += 1
             logger.debug(
-                "Processed sub-batch %d (%d records) for cycle %s",
+                "Persisted sub-batch %d (%d records) for cycle %s",
                 sub_batches_count,
-                len(enriched_sub_batch),
+                len(sub_batch),
                 cycle_id,
             )
 
-        # 5. Mark single cycle as completed
+        # 6. Post-ingestion Analytics Updates (derived strictly from data, zero ML rerun)
+        logger.info("Updating hashtag trends, sentiment rollups, emotion rollups, and network topology...")
+        update_hashtag_trends_from_posts(session, enriched_posts)
+        rollup_sentiment_from_posts(session)
+        rollup_emotions_from_posts(session)
+        update_network_from_posts(session, cycle_id=cycle_id)
+
+        # 7. Finalize and mark single cycle as completed
         pipeline_repo.complete_run(
             ingestion_cycle_id=cycle_id,
             records_ingested=records_count,
@@ -483,15 +497,21 @@ def run_x_ingestion_cycle(
         }
     except Exception as exc:
         logger.exception("Ingestion cycle failed")
+        session.rollback()
         if "cycle_id" in locals():
-            pipeline_repo.fail_run(
-                ingestion_cycle_id=cycle_id,
-                error_message=str(exc),
-                records_failed=records_count if "records_count" in locals() else 0,
-            )
+            try:
+                pipeline_repo.fail_run(
+                    ingestion_cycle_id=cycle_id,
+                    error_message=str(exc),
+                    records_failed=records_count if "records_count" in locals() else 0,
+                )
+            except Exception as fail_err:
+                logger.exception("Failed to record failure in XPipelineRun: %s", fail_err)
+
         _state.update(
             status="error",
             error=str(exc),
+            new_analysis_ready=False,
         )
         raise
     finally:
