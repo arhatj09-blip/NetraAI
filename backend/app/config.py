@@ -28,14 +28,26 @@ class Settings(BaseSettings):
     data_path_reddit: str = "../data/reddit"
     data_path_telegram: str = "../data/telegram"
     
-    # Pipeline
-    pipeline_refresh_interval: int = 900  # seconds
-    batch_size: int = 1000
+    # Pipeline & Demo Configuration
+    ingestion_interval_minutes: int = 15  # logical 15-minute window
+    demo_mode: bool = True
+    demo_ingestion_interval_seconds: int = 15  # 15 real seconds = 15 logical minutes in demo
+    demo_total_duration_minutes: int = 45  # total logical timeline for synthetic dataset replay
+    processing_batch_size: int = 5000  # maximum internal processing sub-batch size
+    pipeline_refresh_interval: int = 900  # seconds (default 15 mins for standard mode)
+    batch_size: int = 5000
     
     class Config:
         env_file = ".env"
         case_sensitive = False
     
+    @property
+    def effective_tick_interval_seconds(self) -> int:
+        """Return tick sleep seconds depending on whether demo acceleration is active."""
+        if self.demo_mode:
+            return self.demo_ingestion_interval_seconds
+        return self.ingestion_interval_minutes * 60
+
     @property
     def cors_origins_list(self) -> List[str]:
         """Get CORS origins as list"""

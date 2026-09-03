@@ -15,7 +15,7 @@ def get_processed_dataset(platform: str):
     project_root = Path(__file__).resolve().parents[3]
     dataset_map = {
         "telegram": project_root / "data" / "telegram" / "netra_telegram_100_sample.csv",
-        "x": project_root / "data" / "x" / "netra_x_100_sample.csv",
+        "x": project_root / "data" / "x" / "x_dataset_synthetic_15000.csv",
     }
 
     if platform_key not in dataset_map:

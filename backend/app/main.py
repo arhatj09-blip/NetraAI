@@ -10,7 +10,7 @@ import asyncio
 import os
 from dotenv import load_dotenv
 
-from app.api import datasets, health, network, pipeline, platforms
+from app.api import datasets, hashtags, health, network, pipeline, platforms
 from app.services.ingestion_service import refresh_now, run_ingestion_worker
 
 # Load environment variables
@@ -62,6 +62,7 @@ app.include_router(pipeline.router, prefix="/api/pipeline", tags=["Pipeline"])
 app.include_router(platforms.router, prefix="/api", tags=["Platforms"])
 app.include_router(datasets.router, prefix="/api", tags=["Datasets"])
 app.include_router(network.router, prefix="/api", tags=["Network"])
+app.include_router(hashtags.router, prefix="/api/x", tags=["X Hashtags"])
 
 
 @app.get("/")

@@ -18,7 +18,7 @@ def test_telegram_preprocessing_returns_summary_and_records():
 
 
 def test_x_preprocessing_returns_summary_and_records():
-    result = preprocess_x_dataset(BASE_DIR.parent / "data" / "x" / "netra_x_100_sample.csv")
+    result = preprocess_x_dataset(BASE_DIR.parent / "data" / "x" / "x_dataset_synthetic_15000.csv")
 
     assert result["total_records"] > 0
     assert "validation" in result
