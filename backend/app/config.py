@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     # Server
     port: int = 8000
     api_base_url: str = "http://localhost:8000"
+
+    # Database
+    database_url: str = "mysql+pymysql://root:@localhost:3306/netraai"
     
     # CORS
     cors_origins: str = "http://localhost:3000,http://localhost:3001,http://localhost:5173"
