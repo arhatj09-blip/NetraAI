@@ -5,6 +5,8 @@ import { DateRangeFilter } from '../components/analysis/DateRangeFilter';
 import { DynamicSocialNetwork } from '../components/network/DynamicSocialNetwork';
 import { AnalyticsTriPanel } from '../components/platforms/AnalyticsTriPanel';
 import { HashtagTrendModal } from '../components/platforms/HashtagTrendModal';
+import { AIAnalyst } from '../components/aiAnalyst';
+import { AIAnalystContext } from '../types/aiAnalyst';
 import { xRisingHashtags, hashtagTrendIntelligence, XRisingHashtag } from '../services/mockData';
 
 export const AnalysisResults: React.FC = () => {
@@ -52,6 +54,15 @@ export const AnalysisResults: React.FC = () => {
   };
 
   const displayQuery = query ? decodeURIComponent(query) : '';
+  
+  // Context object for the embedded AI Analyst assistant
+  const aiContext: AIAnalystContext = {
+    platform: platform || 'x',
+    hashtag: selectedHashtag ? selectedHashtag.tag : (displayQuery ? (displayQuery.startsWith('#') ? displayQuery : `#${displayQuery}`) : undefined),
+    startDate: activeDateRange.startDate,
+    endDate: activeDateRange.endDate,
+    section: 'platform-analysis',
+  };
 
   // Render platform-specific main analysis section
   const renderMainAnalysisSection = () => {
@@ -61,7 +72,7 @@ export const AnalysisResults: React.FC = () => {
     if (normalizedPlatform === 'x') {
       return (
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+          <div id="network-canvas" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm scroll-mt-24">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
               <div>
                 <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2">
@@ -125,7 +136,7 @@ export const AnalysisResults: React.FC = () => {
             </div>
 
             {/* Trending Hashtags */}
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+            <div id="rising-hashtags" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm scroll-mt-24">
               <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
                 <Flame className="w-5 h-5 text-orange-500" />
                 Rising Hashtags
@@ -500,7 +511,7 @@ export const AnalysisResults: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm">
+          <div id="key-platform-metrics" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-sm scroll-mt-24">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
               <div className="w-12 h-12 rounded-xl bg-blue-500/15 dark:bg-blue-500/25 border border-blue-500/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
@@ -596,7 +607,9 @@ export const AnalysisResults: React.FC = () => {
         {renderMainAnalysisSection()}
 
         {/* 3 & 4 & Demographics ─ two-column analytics panel */}
-        <AnalyticsTriPanel isDark={isDark} platform={platform} />
+        <div id="sentiment-analytics" className="scroll-mt-24">
+          <AnalyticsTriPanel isDark={isDark} platform={platform} />
+        </div>
       </div>
     </div>
 
@@ -610,6 +623,12 @@ export const AnalysisResults: React.FC = () => {
         onClose={closeHashtagModal}
       />
     )}
+
+    {/* ── Contextual Embedded AI Analyst Assistant ───────────────────────────── */}
+    <AIAnalyst
+      platform={platform || 'x'}
+      context={aiContext}
+    />
     </>
   );
 };
