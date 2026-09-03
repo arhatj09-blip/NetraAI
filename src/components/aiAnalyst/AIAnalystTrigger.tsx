@@ -36,15 +36,14 @@ export const AIAnalystTrigger: React.FC<AIAnalystTriggerProps> = ({
         aria-expanded={isOpen}
         className={`
           relative flex items-center gap-2.5 px-4 py-3 sm:px-5 sm:py-3.5 rounded-full
-          text-white
           border
           backdrop-blur-xl
           transition-all duration-300
           hover:scale-105 active:scale-95
           focus:outline-none focus:ring-2 focus:ring-blue-400/40
           ${isOpen
-            ? 'bg-blue-600/90 border-blue-400/60 shadow-[0_4px_20px_rgba(59,130,246,0.4)] scale-95'
-            : 'bg-slate-900/90 dark:bg-slate-900/95 border-blue-500/30 hover:border-blue-400/80 shadow-[0_8px_30px_rgba(0,0,0,0.35),0_0_20px_rgba(59,130,246,0.2)] hover:shadow-[0_8px_35px_rgba(0,0,0,0.45),0_0_25px_rgba(59,130,246,0.35)]'
+            ? 'bg-blue-600 border-blue-400/60 text-white shadow-[0_4px_20px_rgba(59,130,246,0.4)] scale-95'
+            : 'bg-white/95 text-slate-900 border-slate-200/90 hover:border-blue-400/80 shadow-[0_8px_30px_rgba(15,23,42,0.12),0_0_15px_rgba(59,130,246,0.15)] hover:shadow-[0_12px_35px_rgba(15,23,42,0.16),0_0_20px_rgba(59,130,246,0.25)] dark:bg-slate-900/90 dark:text-white dark:border-blue-500/30 dark:hover:border-blue-400/80 dark:shadow-[0_8px_30px_rgba(0,0,0,0.35),0_0_20px_rgba(59,130,246,0.2)] dark:hover:shadow-[0_8px_35px_rgba(0,0,0,0.45),0_0_25px_rgba(59,130,246,0.35)]'
           }
         `}
       >
@@ -54,12 +53,12 @@ export const AIAnalystTrigger: React.FC<AIAnalystTriggerProps> = ({
         )}
 
         {/* Icon */}
-        <div className={`relative w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${isOpen ? 'bg-white/20 text-white' : 'bg-blue-500/20 text-blue-400'}`}>
+        <div className={`relative w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-colors ${isOpen ? 'bg-white/20 text-white' : 'bg-blue-50 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'}`}>
           <Sparkles className={`w-3.5 h-3.5 ${isOpen ? '' : 'animate-pulse'}`} />
         </div>
 
         {/* Label */}
-        <span className="relative text-xs sm:text-sm font-bold tracking-wide text-slate-100 group-hover:text-white transition-colors">
+        <span className={`relative text-xs sm:text-sm font-bold tracking-wide ${isOpen ? 'text-white' : 'text-slate-800 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-white'} transition-colors`}>
           AI Analyst
         </span>
 

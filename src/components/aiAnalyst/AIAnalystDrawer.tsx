@@ -70,8 +70,8 @@ export const AIAnalystDrawer: React.FC<AIAnalystDrawerProps> = ({
       onClick={(e) => e.stopPropagation()}
       className={`
         fixed z-50 flex flex-col
-        bg-slate-900/97 dark:bg-[#0c0e14]/97
-        border border-slate-700/60
+        bg-white/98 dark:bg-[#0c0e14]/97
+        border border-slate-200/90 dark:border-slate-700/60
         rounded-2xl
         backdrop-blur-2xl
         overflow-hidden
@@ -93,8 +93,8 @@ export const AIAnalystDrawer: React.FC<AIAnalystDrawerProps> = ({
         transform: isAnimating ? 'translateY(0px) scale(1)' : 'translateY(16px) scale(0.96)',
         opacity: isAnimating ? 1 : 0,
         transition: 'transform 215ms cubic-bezier(0.16, 1, 0.3, 1), opacity 215ms ease-out',
-        /* Premium shadow stack */
-        boxShadow: '0 24px 60px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(148,163,184,0.06)',
+        /* Adaptive theme shadow */
+        boxShadow: 'var(--ai-popup-shadow)',
       }}
     >
       {children}
