@@ -32,7 +32,7 @@ export const AIAnalyst: React.FC<AIAnalystProps> = ({
   // Smooth open transition
   const handleOpen = useCallback(() => {
     setIsOpen(true);
-    // Request animation frame so DOM is mounted before transitioning transform
+    // Double rAF: ensures DOM is mounted before CSS transition kicks in
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         setIsAnimating(true);
@@ -40,13 +40,22 @@ export const AIAnalyst: React.FC<AIAnalystProps> = ({
     });
   }, []);
 
-  // Smooth close transition (250ms reverse before unmounting)
+  // Smooth close: reverse animation, then unmount after 220ms
   const handleClose = useCallback(() => {
     setIsAnimating(false);
     setTimeout(() => {
       setIsOpen(false);
-    }, 250);
+    }, 220);
   }, []);
+
+  // Toggle: clicking trigger while popup is open should close it
+  const handleToggle = useCallback(() => {
+    if (isOpen) {
+      handleClose();
+    } else {
+      handleOpen();
+    }
+  }, [isOpen, handleOpen, handleClose]);
 
   // Auto-scroll chat to latest message
   const scrollToBottom = () => {
@@ -117,10 +126,10 @@ export const AIAnalyst: React.FC<AIAnalystProps> = ({
 
   return (
     <>
-      {/* 1. Unobtrusive Floating Trigger Button */}
+      {/* 1. Floating Trigger Button — toggle open/close */}
       <AIAnalystTrigger
         isOpen={isOpen}
-        onClick={handleOpen}
+        onClick={handleToggle}
         platform={platform}
         hasActiveContext={!!context?.hashtag}
       />

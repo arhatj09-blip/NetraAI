@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 
 interface AIAnalystDrawerProps {
   isOpen: boolean;
@@ -30,51 +31,76 @@ export const AIAnalystDrawer: React.FC<AIAnalystDrawerProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Trap focus or manage initial focus
+  // Set focus when opened
   useEffect(() => {
     if (isOpen && panelRef.current) {
       panelRef.current.focus();
     }
   }, [isOpen]);
 
+  // Keep mounted during close animation; unmount only after it finishes
   if (!isOpen && !isAnimating) return null;
 
-  return (
+  const content = (
+    /**
+     * COMPACT FLOATING CHAT POPUP — NOT a full-height drawer.
+     *
+     * Portaled to document.body / modal-root to guarantee true viewport coordinates
+     * unaffected by any parent transform/will-change wrappers on route pages.
+     *
+     * Positioning:
+     *   fixed bottom-right, 80px from bottom (clears the trigger pill),
+     *   24px from right edge.
+     *
+     * Dimensions:
+     *   width:      420px on desktop, min(420px, calc(100vw - 32px)) on mobile
+     *   height:     min(560px, calc(100vh - 110px))  ← guarantees full in-viewport visibility
+     *   max-height: calc(100vh - 110px)
+     *   min-height: 360px
+     *
+     * NO backdrop. NO inset-0. NO full-viewport overlay.
+     * Dashboard remains fully visible and interactive behind the popup.
+     */
     <div
+      ref={panelRef}
       role="dialog"
-      aria-modal="true"
-      aria-label="AI Analyst Drawer"
-      className="fixed inset-0 z-50 overflow-hidden"
+      aria-modal="false"
+      aria-label="AI Analyst"
+      tabIndex={-1}
+      onClick={(e) => e.stopPropagation()}
+      className={`
+        fixed z-50 flex flex-col
+        bg-slate-900/97 dark:bg-[#0c0e14]/97
+        border border-slate-700/60
+        rounded-2xl
+        backdrop-blur-2xl
+        overflow-hidden
+        focus:outline-none
+        will-change-transform
+        ${isAnimating ? 'pointer-events-auto' : 'pointer-events-none'}
+      `}
+      style={{
+        /* Position — floats above the trigger button at bottom-right of viewport */
+        bottom: '80px',
+        right: '24px',
+        /* Width — responsive */
+        width: 'min(420px, calc(100vw - 32px))',
+        /* Height — constrained to comfortably fit viewport at all desktop & laptop sizes (1366x768, etc.) */
+        height: 'min(560px, calc(100vh - 110px))',
+        maxHeight: 'calc(100vh - 110px)',
+        minHeight: '360px',
+        /* GPU-composited animation: scale + fade */
+        transform: isAnimating ? 'translateY(0px) scale(1)' : 'translateY(16px) scale(0.96)',
+        opacity: isAnimating ? 1 : 0,
+        transition: 'transform 215ms cubic-bezier(0.16, 1, 0.3, 1), opacity 215ms ease-out',
+        /* Premium shadow stack */
+        boxShadow: '0 24px 60px rgba(0,0,0,0.55), 0 8px 24px rgba(0,0,0,0.35), 0 0 0 1px rgba(148,163,184,0.06)',
+      }}
     >
-      {/* Subtle Backdrop - allows dashboard behind to remain visible */}
-      <div
-        onClick={onClose}
-        aria-hidden="true"
-        className={`fixed inset-0 bg-black/30 backdrop-blur-[2px] transition-opacity duration-250 ease-out ${
-          isAnimating ? 'opacity-100' : 'opacity-0'
-        }`}
-      />
-
-      {/* Right-Side Drawer Panel */}
-      <div className="fixed inset-y-0 right-0 flex max-w-full pointer-events-none">
-        <div
-          ref={panelRef}
-          tabIndex={-1}
-          className={`pointer-events-auto w-screen max-w-full sm:w-[420px] md:w-[440px] h-full
-                     bg-slate-900/95 dark:bg-slate-950/95 border-l border-slate-700/60 shadow-2xl
-                     backdrop-blur-xl flex flex-col focus:outline-none
-                     transition-all duration-250 ease-out will-change-transform ${
-                       isAnimating
-                         ? 'translate-x-0 opacity-100'
-                         : 'translate-x-full opacity-0'
-                     }`}
-          style={{
-            transform: isAnimating ? 'translateX(0)' : 'translateX(100%)',
-          }}
-        >
-          {children}
-        </div>
-      </div>
+      {children}
     </div>
   );
+
+  const mountTarget = document.getElementById('modal-root') ?? document.body;
+  return createPortal(content, mountTarget);
 };

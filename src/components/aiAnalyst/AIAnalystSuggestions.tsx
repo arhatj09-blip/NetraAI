@@ -54,7 +54,7 @@ export const AIAnalystSuggestions: React.FC<AIAnalystSuggestionsProps> = ({
   ];
 
   return (
-    <div className="space-y-6 py-4">
+    <div className="space-y-4 py-2">
       {/* Empty State Banner */}
       <div className="p-5 rounded-2xl bg-gradient-to-b from-slate-800/60 to-slate-900/60 border border-slate-700/60 shadow-inner space-y-2">
         <div className="flex items-center gap-2">
