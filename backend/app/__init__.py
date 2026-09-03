@@ -1,1 +1,0 @@
-"""NetraAI Backend Application"""
