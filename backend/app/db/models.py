@@ -96,7 +96,11 @@ class XSentimentAnalytics(Base):
 
 class XEmotionAnalytics(Base):
     __tablename__ = "x_emotion_analytics"
-    __table_args__ = (Index("ix_x_emotion_time_period", "time_period"), Index("ix_x_emotion_emotion", "emotion"),)
+    __table_args__ = (
+        UniqueConstraint("time_period", "emotion", name="uq_x_emotion_period"),
+        Index("ix_x_emotion_time_period", "time_period"),
+        Index("ix_x_emotion_emotion", "emotion"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     time_period: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -126,7 +130,11 @@ class XNetworkNode(Base):
 
 class XNetworkEdge(Base):
     __tablename__ = "x_network_edges"
-    __table_args__ = (Index("ix_x_network_edges_source", "source_user_id"), Index("ix_x_network_edges_target", "target_user_id"),)
+    __table_args__ = (
+        UniqueConstraint("source_user_id", "target_user_id", "interaction_type", name="uq_x_network_edges"),
+        Index("ix_x_network_edges_source", "source_user_id"),
+        Index("ix_x_network_edges_target", "target_user_id"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     source_user_id: Mapped[str] = mapped_column(String(255), nullable=False)

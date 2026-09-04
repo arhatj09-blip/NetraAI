@@ -1,10 +1,32 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MessageCircle, Users, Send } from 'lucide-react';
 import { PlatformCard } from './PlatformCard';
+import { apiService } from '../../services/apiService';
 
 export const PlatformCardsSection: React.FC = () => {
   const navigate = useNavigate();
+  const [xStats, setXStats] = useState({
+    totalPosts: '15.0K',
+    positivePct: '60.8%',
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    apiService.getAnalytics()
+      .then((data) => {
+        if (isMounted && data) {
+          const totalStr = data.total_posts >= 1000 ? `${(data.total_posts / 1000).toFixed(1)}K` : `${data.total_posts}`;
+          const posPctStr = `${data.sentiment_distribution.positive_pct.toFixed(1)}%`;
+          setXStats({
+            totalPosts: totalStr,
+            positivePct: posPctStr,
+          });
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
 
   const handlePlatformClick = (platform: string) => {
     navigate(`/dashboard/analysis/${platform.toLowerCase()}`);
@@ -33,11 +55,11 @@ export const PlatformCardsSection: React.FC = () => {
           platform="X"
           icon={<MessageCircle className="w-7 h-7 text-white" />}
           title="X (Twitter)"
-          description="Real-time sentiment tracking and trending topic analysis from X platform"
+          description="Near-real-time simulated sentiment tracking and trending topic analysis from X platform"
           stats={[
-            { label: 'Active Signals', value: '184.4K' },
-            { label: 'Avg Sentiment', value: '+68.2%' },
-            { label: 'Trend Velocity', value: '↑ 12.4%' },
+            { label: 'Active Signals', value: xStats.totalPosts },
+            { label: 'Positive Ratio', value: xStats.positivePct },
+            { label: 'Trend Engine', value: 'Simulated 15m' },
           ]}
           accentColor="bg-gradient-to-br from-blue-500 to-blue-600"
           onClick={() => handlePlatformClick('X')}
@@ -48,11 +70,11 @@ export const PlatformCardsSection: React.FC = () => {
           platform="Social"
           icon={<Users className="w-7 h-7 text-white" />}
           title="Social Media Feeds"
-          description="Discussion vector analysis and multi-source community sentiment monitoring"
+          description="Prototype Preview — Discussion vector analysis and community sentiment monitoring"
           stats={[
-            { label: 'Active Signals', value: '90.0K' },
+            { label: 'Platform Status', value: 'Preview' },
             { label: 'Avg Sentiment', value: '+58.0%' },
-            { label: 'Trend Velocity', value: '↑ 7.8%' },
+            { label: 'Sample Nodes', value: '112 Channels' },
           ]}
           accentColor="bg-gradient-to-br from-indigo-500 to-indigo-600"
           onClick={() => handlePlatformClick('Social')}
@@ -63,15 +85,16 @@ export const PlatformCardsSection: React.FC = () => {
           platform="Telegram"
           icon={<Send className="w-7 h-7 text-white" />}
           title="Telegram"
-          description="Encrypted channel analysis and alpha signal detection"
+          description="Future Platform Integration — Channel analysis and alpha signal detection preview"
           stats={[
-            { label: 'Active Signals', value: '62.8K' },
+            { label: 'Platform Status', value: 'Preview' },
             { label: 'Avg Sentiment', value: '+81.4%' },
-            { label: 'Trend Velocity', value: '↑ 15.2%' },
+            { label: 'Sample Channels', value: '50 Groups' },
           ]}
           accentColor="bg-gradient-to-br from-cyan-500 to-cyan-600"
           onClick={() => handlePlatformClick('Telegram')}
         />
+
       </div>
     </section>
   );

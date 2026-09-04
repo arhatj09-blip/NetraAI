@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Users, Info } from 'lucide-react';
 import { PlotlyChart } from '../charts/PlotlyChart';
 import { inferredDemographicsData } from '../../services/mockData';
+import { apiService } from '../../services/apiService';
 
 type DemoTab = 'gender' | 'age' | 'region';
 
@@ -10,18 +11,11 @@ interface DemographicsPanelV2Props {
 }
 
 // ─── Colour palette for donut slices ───────────────────────────────────────
-const AGE_COLORS = ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7'];
-
-// ─── Data structures ────────────────────────────────────────────────────────
-const ageGroupData = inferredDemographicsData.ageGroups.map((g, i) => ({
-  label: g.range,
-  value: g.percentage,
-  color: AGE_COLORS[i % AGE_COLORS.length],
-}));
-
-// Gender and Region are not present in the dataset
-const GENDER_AVAILABLE = false;
-const REGION_AVAILABLE = false;
+const COLOR_PALETTES: Record<DemoTab, string[]> = {
+  gender: ['#3b82f6', '#ec4899', '#94a3b8'],
+  age: ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#0ea5e9'],
+  region: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#0ea5e9', '#ec4899'],
+};
 
 // ─── Tab configuration ──────────────────────────────────────────────────────
 const TABS: { id: DemoTab; label: string }[] = [
@@ -29,21 +23,6 @@ const TABS: { id: DemoTab; label: string }[] = [
   { id: 'age', label: 'Age Group' },
   { id: 'region', label: 'Region' },
 ];
-
-// ─── Unavailable state ───────────────────────────────────────────────────────
-const UnavailableState: React.FC<{ label: string }> = ({ label }) => (
-  <div className="flex flex-col items-center justify-center flex-1 py-12 px-6 text-center">
-    <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center mb-4">
-      <Info className="w-6 h-6 text-slate-400" />
-    </div>
-    <p className="text-sm font-semibold text-slate-500 dark:text-slate-400 mb-1">
-      {label} data unavailable
-    </p>
-    <p className="text-xs text-slate-400 dark:text-slate-500 max-w-[220px] leading-relaxed">
-      This demographic category is not present in the current dataset. Data will appear when signals include {label.toLowerCase()} markers.
-    </p>
-  </div>
-);
 
 // ─── Donut chart ─────────────────────────────────────────────────────────────
 interface DonutChartProps {
@@ -82,7 +61,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, isDark }) => {
   );
 
   // Centre annotation — dominant slice
-  const dominant = data.reduce((a, b) => (a.value > b.value ? a : b));
+  const dominant = data.length > 0 ? data.reduce((a, b) => (a.value > b.value ? a : b)) : { label: 'N/A', value: 0, color: '#3b82f6' };
 
   return (
     <div className="relative flex items-center justify-center">
@@ -148,8 +127,8 @@ interface SummaryStripProps {
 }
 
 const SummaryStrip: React.FC<SummaryStripProps> = ({ data }) => {
-  const dominant = data.reduce((a, b) => (a.value > b.value ? a : b));
-  const total = data.reduce((s, d) => s + d.value, 0);
+  const dominant = data.length > 0 ? data.reduce((a, b) => (a.value > b.value ? a : b)) : { label: 'N/A', value: 0, color: '#3b82f6' };
+  const total = Math.round(data.reduce((s, d) => s + d.value, 0));
 
   return (
     <div className="mt-5 grid grid-cols-3 gap-3">
@@ -185,16 +164,42 @@ const SummaryStrip: React.FC<SummaryStripProps> = ({ data }) => {
 // ─── Main component ───────────────────────────────────────────────────────────
 export const DemographicsPanelV2: React.FC<DemographicsPanelV2Props> = ({ isDark }) => {
   const [activeTab, setActiveTab] = useState<DemoTab>('age');
+  const [demoState, setDemoState] = useState<{
+    gender: { label: string; value: number; color: string }[];
+    age: { label: string; value: number; color: string }[];
+    region: { label: string; value: number; color: string }[];
+  }>({
+    gender: [],
+    age: inferredDemographicsData.ageGroups.map((g, i) => ({ label: g.range, value: g.percentage, color: COLOR_PALETTES.age[i % COLOR_PALETTES.age.length] })),
+    region: [],
+  });
 
-  const isAvailable = useMemo(() => {
-    if (activeTab === 'gender') return GENDER_AVAILABLE;
-    if (activeTab === 'region') return REGION_AVAILABLE;
-    return true;
-  }, [activeTab]);
+  useEffect(() => {
+    let isMounted = true;
+    apiService.getDemographics()
+      .then((res: any) => {
+        if (!isMounted || !res) return;
+        
+        const mapItems = (items: Array<{ label: string; percentage: number }>, palette: string[]) =>
+          items.map((item, i) => ({
+            label: item.label,
+            value: item.percentage,
+            color: palette[i % palette.length],
+          }));
 
-  const tabLabel = TABS.find((t) => t.id === activeTab)?.label ?? activeTab;
+        setDemoState({
+          gender: res.gender && res.gender.length ? mapItems(res.gender, COLOR_PALETTES.gender) : [],
+          age: res.age_groups && res.age_groups.length ? mapItems(res.age_groups, COLOR_PALETTES.age) : [],
+          region: res.regions && res.regions.length ? mapItems(res.regions.slice(0, 5), COLOR_PALETTES.region) : [],
+        });
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
 
-
+  const activeData = useMemo(() => {
+    return demoState[activeTab] || [];
+  }, [activeTab, demoState]);
 
   return (
     <div className="flex flex-col h-full">
@@ -235,16 +240,16 @@ export const DemographicsPanelV2: React.FC<DemographicsPanelV2Props> = ({ isDark
 
       {/* Content area */}
       <div className="flex flex-col flex-1 min-h-0">
-        {isAvailable ? (
+        {activeData.length > 0 ? (
           <>
             {/* Donut chart */}
-            <DonutChart data={ageGroupData} isDark={isDark} />
+            <DonutChart data={activeData} isDark={isDark} />
 
             {/* Legend */}
-            <Legend data={ageGroupData} />
+            <Legend data={activeData} />
 
             {/* Summary strip */}
-            <SummaryStrip data={ageGroupData} tabLabel={activeTab} />
+            <SummaryStrip data={activeData} tabLabel={activeTab} />
 
             {/* Inference disclaimer */}
             <div className="mt-5 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
@@ -257,7 +262,10 @@ export const DemographicsPanelV2: React.FC<DemographicsPanelV2Props> = ({ isDark
             </div>
           </>
         ) : (
-          <UnavailableState label={tabLabel} />
+          <div className="flex flex-col items-center justify-center flex-1 py-12 px-6 text-center">
+            <Info className="w-6 h-6 text-slate-400 mb-2" />
+            <p className="text-sm font-semibold text-slate-500">Loading {activeTab} data...</p>
+          </div>
         )}
       </div>
     </div>

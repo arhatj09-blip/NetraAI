@@ -39,7 +39,7 @@ export const PipelineHero: React.FC<PipelineHeroProps> = ({
             Pipeline Ingestion Active
           </h1>
           <p className="text-slate-600 dark:text-slate-300 max-w-xl text-sm leading-relaxed">
-            Real-time analysis is currently processing synchronized data batches across decentralized social media platforms (X, Telegram, and public communication feeds). Next recalculation scheduled automatically.
+            Near-real-time simulated pipeline is processing 15-minute ingestion cycles across processed social media signals (X historical &amp; live dataset). Next recalculation scheduled automatically.
           </p>
 
           <div className="grid grid-cols-3 gap-6 sm:gap-10 mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">

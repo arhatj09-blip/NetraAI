@@ -19,9 +19,20 @@ numpy>=2.0.0
 networkx>=3.0
 openpyxl>=3.1.5
 
+# Machine Learning & NLP Pipelines (M3 Core)
+torch>=2.11.0
+transformers>=5.5.0
+scikit-learn>=1.8.0
+scipy>=1.17.0
+sentencepiece>=0.2.0
+tiktoken>=0.14.0
+joblib>=1.4.0
+tqdm>=4.66.0
+
 # HTTP client (for future API integrations if needed)
 httpx==0.28.1
 
 # Development tools
 pytest==8.3.4
 pytest-asyncio==0.24.0
+

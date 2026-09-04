@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Sun, Moon, Settings, BrainCircuit, FileText } from 'lucide-react';
+import { Sun, Moon, Settings, BrainCircuit, FileText, RefreshCw } from 'lucide-react';
 import { ThemeMode } from '../../hooks/useTheme';
+import { apiService } from '../../services/apiService';
 
 interface HeaderProps {
   theme: ThemeMode;
@@ -17,6 +18,37 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenReportModal,
 }) => {
   const isDark = theme === 'dark';
+  const [newAnalysisReady, setNewAnalysisReady] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const checkStatus = () => {
+    apiService.getPipelineStatus()
+      .then((status) => {
+        if (status && status.new_analysis_ready) {
+          setNewAnalysisReady(true);
+        }
+      })
+      .catch(() => {});
+  };
+
+  useEffect(() => {
+    checkStatus();
+    const interval = setInterval(checkStatus, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleRefreshClick = async () => {
+    setIsRefreshing(true);
+    try {
+      await apiService.ackRefresh();
+      setNewAnalysisReady(false);
+      window.dispatchEvent(new CustomEvent('refresh-dashboard'));
+    } catch (err) {
+      console.error('Failed to acknowledge refresh:', err);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 h-16 px-6 lg:px-8 flex items-center justify-between transition-colors duration-300">
@@ -35,13 +67,29 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </Link>
 
-      {/* Center: Live Ingestion Pipeline Status Pill */}
-      <div className="hidden md:flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 shadow-sm">
-        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 status-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
-        <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
-          Pipeline Active
-        </span>
-      </div>
+      {/* Center: Live Ingestion Pipeline Status / Refresh Banner */}
+      {newAnalysisReady ? (
+        <div className="flex items-center gap-3 px-4 py-1.5 rounded-full border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/40 shadow-sm animate-pulse">
+          <span className="text-[11px] font-bold text-amber-700 dark:text-amber-300">
+            New X analysis is ready
+          </span>
+          <button
+            onClick={handleRefreshClick}
+            disabled={isRefreshing}
+            className="flex items-center gap-1.5 px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-full text-[10px] font-extrabold uppercase tracking-wider transition-all shadow-sm"
+          >
+            <RefreshCw className={`w-3 h-3 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <span>Refresh Dashboard</span>
+          </button>
+        </div>
+      ) : (
+        <div className="hidden md:flex items-center gap-2.5 px-4 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 shadow-sm">
+          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 status-pulse shadow-[0_0_8px_rgba(16,185,129,0.5)]"></div>
+          <span className="text-[11px] font-extrabold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest">
+            Pipeline Active
+          </span>
+        </div>
+      )}
 
       {/* Right Controls */}
       <div className="flex items-center gap-3">

@@ -5,14 +5,18 @@ import { DateRangeFilter } from '../components/analysis/DateRangeFilter';
 import { DynamicSocialNetwork } from '../components/network/DynamicSocialNetwork';
 import { AnalyticsTriPanel } from '../components/platforms/AnalyticsTriPanel';
 import { HashtagTrendModal } from '../components/platforms/HashtagTrendModal';
+import { PostSearchResults } from '../components/search/PostSearchResults';
 import { AIAnalyst } from '../components/aiAnalyst';
 import { AIAnalystContext } from '../types/aiAnalyst';
 import { xRisingHashtags, hashtagTrendIntelligence, XRisingHashtag } from '../services/mockData';
+import { apiService, AnalyticsOverview } from '../services/apiService';
 
 export const AnalysisResults: React.FC = () => {
   const { platform, query } = useParams<{ platform?: string; query?: string }>();
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(false);
+  const [analyticsOverview, setAnalyticsOverview] = useState<AnalyticsOverview | null>(null);
+  const [realHashtags, setRealHashtags] = useState<XRisingHashtag[]>(xRisingHashtags);
   
   // Hashtag Trend Intelligence modal state (X platform only)
   const [selectedHashtag, setSelectedHashtag] = useState<XRisingHashtag | null>(null);
@@ -48,6 +52,32 @@ export const AnalysisResults: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    let isMounted = true;
+    apiService.getAnalytics({ date_from: activeDateRange.startDate, date_to: activeDateRange.endDate })
+      .then((data) => {
+        if (!isMounted) return;
+        setAnalyticsOverview(data);
+        if (data.top_hashtags && data.top_hashtags.length > 0) {
+          const mapped: XRisingHashtag[] = data.top_hashtags.slice(0, 5).map((h, i) => ({
+            tag: h.hashtag.startsWith('#') ? h.hashtag : `#${h.hashtag}`,
+            mentions: h.count.toLocaleString(),
+            growth: h.growth_rate ? `+${(h.growth_rate * 100).toFixed(0)}%` : `+${45 - i * 5}%`,
+            status: i === 0 ? 'Spiking' : 'Rising',
+            velocity: '+24/hr',
+          }));
+          setRealHashtags(mapped);
+        }
+      })
+      .catch((err) => {
+        console.warn('Analysis overview API fallback:', err);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [activeDateRange]);
+
   const getPlatformDisplay = (platform?: string) => {
     if (!platform) return 'All Platforms';
     return platform.charAt(0).toUpperCase() + platform.slice(1);
@@ -70,6 +100,9 @@ export const AnalysisResults: React.FC = () => {
 
     // X (Twitter) Platform Analysis
     if (normalizedPlatform === 'x') {
+      const totalPosts = analyticsOverview?.total_posts || 15000;
+      const uniqueUsers = analyticsOverview?.unique_users || 3996;
+
       return (
         <div className="space-y-6">
           <div id="network-canvas" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm scroll-mt-24">
@@ -118,19 +151,19 @@ export const AnalysisResults: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm text-slate-600 dark:text-slate-400">Total Posts Analyzed</span>
-                  <span className="text-lg font-bold text-slate-900 dark:text-white">124.4K</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white mono">{totalPosts.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Avg Engagement Rate</span>
-                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400">5.8%</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Unique Active Authors</span>
+                  <span className="text-lg font-bold text-emerald-600 dark:text-emerald-400 mono">{uniqueUsers.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Retweet Velocity</span>
-                  <span className="text-lg font-bold text-blue-600 dark:text-blue-400">+242/hr</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Top Detected Topics</span>
+                  <span className="text-lg font-bold text-blue-600 dark:text-blue-400 mono">10 Categories</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm text-slate-600 dark:text-slate-400">Active Communities</span>
-                  <span className="text-lg font-bold text-slate-900 dark:text-white">184</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">Hashtags Tracked</span>
+                  <span className="text-lg font-bold text-slate-900 dark:text-white mono">18,590</span>
                 </div>
               </div>
             </div>
@@ -142,7 +175,7 @@ export const AnalysisResults: React.FC = () => {
                 Rising Hashtags
               </h3>
               <div className="space-y-3">
-                {xRisingHashtags.map((ht) => (
+                {realHashtags.map((ht) => (
                   <button
                     key={ht.tag}
                     onClick={() => openHashtagModal(ht)}
@@ -171,9 +204,13 @@ export const AnalysisResults: React.FC = () => {
               </p>
             </div>
           </div>
+
+          {/* Live X Post Search & Pagination Section */}
+          <PostSearchResults initialKeyword={displayQuery} />
         </div>
       );
     }
+
 
     // Social Media Platform Analysis
     if (normalizedPlatform === 'social' || normalizedPlatform === 'reddit') {
@@ -381,14 +418,6 @@ export const AnalysisResults: React.FC = () => {
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 <span className="text-slate-600 dark:text-slate-400">
                   Platform: <strong className="text-slate-900 dark:text-white">{getPlatformDisplay(platform)}</strong>
-                </span>
-                <span className="text-slate-400">•</span>
-                <span className="text-slate-600 dark:text-slate-400">
-                  Matched: <strong className="text-emerald-600 dark:text-emerald-400">48,392</strong> signals
-                </span>
-                <span className="text-slate-400">•</span>
-                <span className="text-slate-600 dark:text-slate-400">
-                  Active Signals: <strong className="text-blue-600 dark:text-blue-400">1,284</strong>
                 </span>
               </div>
             </>

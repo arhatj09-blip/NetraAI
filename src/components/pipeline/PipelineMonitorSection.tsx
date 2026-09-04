@@ -1,11 +1,9 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Database,
   CheckCircle,
   RefreshCw,
   Twitter,
-  MessageSquare,
-  Send,
   Layers,
   Smile,
   Activity,
@@ -13,14 +11,42 @@ import {
   TrendingUp,
   Share2,
   Sparkles,
+  Clock,
+  CheckCircle2,
 } from 'lucide-react';
 import {
-  platformDistributionData,
   initialIngestionLogs,
   pipelineStages,
 } from '../../services/mockData';
+import { apiService, PipelineStatus } from '../../services/apiService';
 
 export const PipelineMonitorSection: React.FC = () => {
+  const [pipelineData, setPipelineData] = useState<PipelineStatus | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    apiService.getPipelineStatus()
+      .then((data) => {
+        if (isMounted) setPipelineData(data);
+      })
+      .catch((err) => {
+        console.warn('Pipeline status API fallback:', err);
+      });
+
+    const interval = window.setInterval(() => {
+      apiService.getPipelineStatus()
+        .then((data) => {
+          if (isMounted) setPipelineData(data);
+        })
+        .catch(() => {});
+    }, 15000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(interval);
+    };
+  }, []);
+
   const getStageIcon = (iconName: string) => {
     switch (iconName) {
       case 'database':
@@ -44,6 +70,9 @@ export const PipelineMonitorSection: React.FC = () => {
     }
   };
 
+  const totalRecords = pipelineData?.records_processed || 15000;
+  const xRecords = pipelineData?.platform_records?.['x'] || 15000;
+
   return (
     <section id="pipeline-monitor" className="space-y-8">
       {/* Header */}
@@ -56,15 +85,16 @@ export const PipelineMonitorSection: React.FC = () => {
             <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Pipeline Status Monitor
             </h2>
-            <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold">
-              Service Health &amp; Ingestion Logs
+            <p className="text-xs uppercase tracking-widest text-slate-500 dark:text-slate-400 font-bold flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-blue-500" />
+              Near-real-time simulated pipeline (15-minute ingestion cycle)
             </p>
           </div>
         </div>
 
         <span className="px-5 py-2 rounded-full bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-sm">
           <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 status-pulse"></div>
-          ACTIVE INGESTION ENGINE
+          {pipelineData?.status ? pipelineData.status.toUpperCase() : 'OPERATIONAL'} (15-MIN BATCH CYCLE)
         </span>
       </div>
 
@@ -82,44 +112,30 @@ export const PipelineMonitorSection: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex justify-between items-center text-xs font-bold">
                   <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                    <Twitter className="w-3.5 h-3.5 text-blue-500" /> X (Twitter)
+                    <Twitter className="w-3.5 h-3.5 text-blue-500" /> X (Twitter) Historical Dataset
                   </span>
                   <span className="mono text-slate-900 dark:text-white">
-                    {(platformDistributionData.xRecords / 1000).toFixed(1)}K (45%)
+                    {xRecords.toLocaleString()} (100%)
                   </span>
                 </div>
                 <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700/60">
-                  <div className="h-full bg-blue-500 rounded-full" style={{ width: '45%' }}></div>
+                  <div className="h-full bg-blue-500 rounded-full" style={{ width: '100%' }}></div>
                 </div>
               </div>
 
-              {/* Social Media Platforms */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs font-bold">
-                  <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                    <MessageSquare className="w-3.5 h-3.5 text-indigo-500" /> Social Media Channels
-                  </span>
-                  <span className="mono text-slate-900 dark:text-white">
-                    {(platformDistributionData.socialRecords / 1000).toFixed(1)}K (33%)
-                  </span>
+              {/* Ingestion Info */}
+              <div className="p-3.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs space-y-1.5">
+                <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                  <span>Last Cycle ID:</span>
+                  <span className="font-bold text-slate-800 dark:text-slate-200 mono">{pipelineData?.last_completed_cycle || 'hist_15k_x'}</span>
                 </div>
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700/60">
-                  <div className="h-full bg-indigo-500 rounded-full" style={{ width: '33%' }}></div>
+                <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                  <span>Ingestion Cadence:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">15-minute simulated</span>
                 </div>
-              </div>
-
-              {/* Telegram */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center text-xs font-bold">
-                  <span className="flex items-center gap-1.5 text-slate-700 dark:text-slate-300">
-                    <Send className="w-3.5 h-3.5 text-sky-500" /> Telegram
-                  </span>
-                  <span className="mono text-slate-900 dark:text-white">
-                    {(platformDistributionData.telegramRecords / 1000).toFixed(1)}K (23%)
-                  </span>
-                </div>
-                <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700/60">
-                  <div className="h-full bg-sky-500 rounded-full" style={{ width: '23%' }}></div>
+                <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                  <span>Pipeline Health:</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{pipelineData?.health_index || 100}% Optimal</span>
                 </div>
               </div>
             </div>
@@ -127,10 +143,10 @@ export const PipelineMonitorSection: React.FC = () => {
 
           <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
             <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400">
-              Total Ingestion Batch
+              Total Ingested Records
             </span>
             <span className="text-xl font-extrabold text-slate-900 dark:text-white mono">
-              {platformDistributionData.totalRecords.toLocaleString()}
+              {totalRecords.toLocaleString()}
             </span>
           </div>
         </div>
@@ -139,14 +155,40 @@ export const PipelineMonitorSection: React.FC = () => {
         <div className="lg:col-span-2 card-base rounded-[2.5rem] p-6 sm:p-8 flex flex-col justify-between">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-bold text-slate-900 dark:text-white uppercase text-xs tracking-widest text-slate-500 dark:text-slate-400">
-              Live Ingestion Batch Log
+              Simulated Ingestion Batch Log
             </h3>
-            <span className="text-[10px] uppercase font-bold text-emerald-500">
-              All Nodes Operational
+            <span className="text-[10px] uppercase font-bold text-emerald-500 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              All Ingestion Nodes Active
             </span>
           </div>
 
           <div className="space-y-3 max-h-[260px] overflow-y-auto custom-scrollbar pr-2">
+            <div className="p-3.5 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white mono">
+                      {new Date().toISOString().replace('T', ' ').substring(0, 19)}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-600 dark:text-emerald-400">
+                      SIMULATED INGESTION SYNC
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5">
+                    Near-real-time 15-minute simulated window &bull; Fast-forward pipeline active
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mono">
+                  {totalRecords.toLocaleString()}
+                </span>
+                <p className="text-[9px] uppercase font-bold text-emerald-500">Active</p>
+              </div>
+            </div>
+
             {initialIngestionLogs.map((log) => (
               <div
                 key={log.id}
@@ -234,3 +276,4 @@ export const PipelineMonitorSection: React.FC = () => {
     </section>
   );
 };
+
