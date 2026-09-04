@@ -10,8 +10,8 @@ import asyncio
 import os
 from dotenv import load_dotenv
 
-from app.api import datasets, hashtags, health, network, pipeline, platforms
-from app.services.ingestion_service import refresh_now, run_ingestion_worker
+from app.api import datasets, hashtags, health, network, pipeline, platforms, x_analytics
+from app.services.ingestion_service import run_ingestion_worker
 
 # Load environment variables
 load_dotenv()
@@ -20,18 +20,24 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Startup and shutdown lifecycle"""
-    print("🚀 NetraAI Backend starting...")
-    print(f"📊 Environment: {os.getenv('ENVIRONMENT', 'development')}")
-    print(f"🔗 API Base URL: {os.getenv('API_BASE_URL', 'http://localhost:8000')}")
-    stop_event = asyncio.Event()
-    await asyncio.to_thread(refresh_now)
-    worker_task = asyncio.create_task(run_ingestion_worker(stop_event))
-    app.state.ingestion_stop_event = stop_event
-    app.state.ingestion_worker = worker_task
+    print("[STARTUP] NetraAI Backend starting...")
+    print(f"[ENV] Environment: {os.getenv('ENVIRONMENT', 'development')}")
+    print(f"[URL] API Base URL: {os.getenv('API_BASE_URL', 'http://localhost:8000')}")
+    enable_worker = os.getenv("ENABLE_INGESTION_WORKER", "false").lower() in ("true", "1")
+    worker_task = None
+    if enable_worker:
+        stop_event = asyncio.Event()
+        worker_task = asyncio.create_task(run_ingestion_worker(stop_event))
+        app.state.ingestion_stop_event = stop_event
+        app.state.ingestion_worker = worker_task
     yield
-    stop_event.set()
-    await worker_task
-    print("👋 NetraAI Backend shutting down...")
+    if worker_task:
+        stop_event.set()
+        try:
+            await asyncio.wait_for(worker_task, timeout=2.0)
+        except Exception:
+            pass
+    print("[SHUTDOWN] NetraAI Backend shutting down...")
 
 
 # Initialize FastAPI application
@@ -63,6 +69,7 @@ app.include_router(platforms.router, prefix="/api", tags=["Platforms"])
 app.include_router(datasets.router, prefix="/api", tags=["Datasets"])
 app.include_router(network.router, prefix="/api", tags=["Network"])
 app.include_router(hashtags.router, prefix="/api/x", tags=["X Hashtags"])
+app.include_router(x_analytics.router, prefix="/api/x", tags=["X Analytics"])
 
 
 @app.get("/")

@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { PlotlyChart } from '../charts/PlotlyChart';
-import { emotionalPulseData } from '../../services/mockData';
+import { emotionalPulseData as mockEmotionalPulseData } from '../../services/mockData';
+import { apiService } from '../../services/apiService';
 
 interface EmotionalPulseBarProps {
   isDark: boolean;
@@ -27,24 +28,38 @@ export const EmotionalPulseBar: React.FC<EmotionalPulseBarProps> = ({
   color = '#3b82f6',
   orientation = 'h',
 }) => {
+  const [pulseData, setPulseData] = useState<Array<{ emotion: string; value: number }>>(mockEmotionalPulseData);
+
+  useEffect(() => {
+    let isMounted = true;
+    apiService.getEmotions()
+      .then((res) => {
+        if (isMounted && res && res.summary && res.summary.length > 0) {
+          setPulseData(res.summary.map(s => ({ emotion: s.emotion, value: s.percentage })));
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
+
   const chartData = useMemo(() => {
     if (orientation === 'v') {
       // Vertical bar chart — emotions on x-axis, values on y-axis
       return [
         {
-          x: emotionalPulseData.map((d) => d.emotion),
-          y: emotionalPulseData.map((d) => d.value),
+          x: pulseData.map((d) => d.emotion),
+          y: pulseData.map((d) => d.value),
           type: 'bar' as const,
           orientation: 'v' as const,
           marker: {
-            color: emotionalPulseData.map((_, i) => EMOTION_COLORS[i % EMOTION_COLORS.length]),
+            color: pulseData.map((_, i) => EMOTION_COLORS[i % EMOTION_COLORS.length]),
             opacity: 0.9,
             line: {
               color: 'rgba(255,255,255,0.15)',
               width: 1,
             },
           },
-          text: emotionalPulseData.map((d) => `${d.value}%`),
+          text: pulseData.map((d) => `${d.value}%`),
           textposition: 'outside' as const,
           textfont: {
             family: 'JetBrains Mono, monospace',
@@ -57,7 +72,7 @@ export const EmotionalPulseBar: React.FC<EmotionalPulseBarProps> = ({
     }
 
     // Horizontal bars (original behaviour)
-    const reversed = [...emotionalPulseData].reverse();
+    const reversed = [...pulseData].reverse();
     return [
       {
         x: reversed.map((d) => d.value),

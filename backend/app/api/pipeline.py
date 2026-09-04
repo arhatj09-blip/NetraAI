@@ -5,9 +5,10 @@ Pipeline Status and Scheduler Control Endpoints
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
 from app.config import settings
+from app.db.database import get_session
 from app.models.responses import PipelineStatusResponse
 from app.services.ingestion_service import (
     acknowledge_dashboard_refresh,
@@ -75,3 +76,35 @@ async def trigger_ingestion_cycle():
         "new_records_processed": state.get("new_records_processed", 0),
         "new_analysis_ready": state.get("new_analysis_ready", False),
     }
+
+
+@router.get("/history")
+async def get_pipeline_history(
+    limit: int = 20,
+    session = Depends(get_session),
+):
+    """
+    Returns pipeline audit history records from MySQL.
+    """
+    from sqlalchemy import select
+    from app.db.models import XPipelineRun
+    stmt = select(XPipelineRun).order_by(XPipelineRun.scheduled_time.desc(), XPipelineRun.id.desc()).limit(limit)
+    runs = list(session.scalars(stmt).all())
+    return [
+        {
+            "id": r.id,
+            "ingestion_cycle_id": r.ingestion_cycle_id,
+            "platform": r.platform,
+            "source": r.source,
+            "scheduled_time": r.scheduled_time.isoformat() if r.scheduled_time else None,
+            "actual_start_time": r.actual_start_time.isoformat() if r.actual_start_time else None,
+            "actual_end_time": r.actual_end_time.isoformat() if r.actual_end_time else None,
+            "records_available": r.records_available,
+            "records_ingested": r.records_ingested,
+            "records_processed": r.records_processed,
+            "records_failed": r.records_failed,
+            "status": r.status,
+            "error_message": r.error_message,
+        }
+        for r in runs
+    ]

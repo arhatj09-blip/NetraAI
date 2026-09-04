@@ -10,12 +10,14 @@
  * Tablet:   single column, three cards stacked
  * Mobile:   single column, three cards stacked
  */
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Activity, BarChart2 } from 'lucide-react';
 import { SentimentTimeline } from '../crossPlatform/SentimentTimeline';
 import { EmotionalPulseBar } from '../platforms/EmotionalPulseBar';
 import { DemographicsPanelV2 } from '../demographics/DemographicsPanelV2';
-import { sentimentTimelineData } from '../../services/mockData';
+import { sentimentTimelineData as mockSentimentTimeline } from '../../services/mockData';
+import { apiService } from '../../services/apiService';
+import { SentimentTimelinePoint } from '../../types/intelligence';
 
 interface AnalyticsTriPanelProps {
   isDark: boolean;
@@ -84,6 +86,23 @@ const SectionHeader: React.FC<{
 // ─── Main component ───────────────────────────────────────────────────────────
 export const AnalyticsTriPanel: React.FC<AnalyticsTriPanelProps> = ({ isDark, platform }) => {
   const lineColor = getPlatformColor(platform);
+  const [timelinePoints, setTimelinePoints] = useState<SentimentTimelinePoint[]>(mockSentimentTimeline['24H']);
+
+  useEffect(() => {
+    let isMounted = true;
+    apiService.getSentiment()
+      .then((res) => {
+        if (isMounted && res && res.timeline && res.timeline.length > 0) {
+          const points: SentimentTimelinePoint[] = res.timeline.map((item) => ({
+            time: new Date(item.time_period).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            value: Math.round(item.positive_percentage),
+          }));
+          setTimelinePoints(points.slice(-20));
+        }
+      })
+      .catch(() => {});
+    return () => { isMounted = false; };
+  }, []);
 
   return (
     <section aria-label="Analytics — Sentiment, Emotion, Demographics" className="mt-12">
@@ -108,7 +127,7 @@ export const AnalyticsTriPanel: React.FC<AnalyticsTriPanelProps> = ({ isDark, pl
             />
             <SentimentTimeline
               isDark={isDark}
-              timeline={sentimentTimelineData['24H']}
+              timeline={timelinePoints}
               lineColor={lineColor}
               height="h-[240px]"
             />

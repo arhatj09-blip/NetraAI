@@ -29,28 +29,34 @@ from app.services.hashtag_service import (
 
 @pytest.fixture
 def db_session():
-    test_engine = create_engine(settings.database_url, **_engine_kwargs(settings.database_url))
+    from sqlalchemy.pool import StaticPool
+    test_db_url = "sqlite:///:memory:"
+    test_engine = create_engine(
+        test_db_url,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+    with test_engine.connect() as conn:
+        conn.execute(text("PRAGMA foreign_keys = ON;"))
     create_db_and_tables(test_engine)
     session_factory = sessionmaker(bind=test_engine, expire_on_commit=False)
     session = session_factory()
+    session.execute(text("PRAGMA foreign_keys = ON;"))
     try:
-        if not settings.database_url.startswith("sqlite"):
-            session.execute(text("SET FOREIGN_KEY_CHECKS=0;"))
-            for table in reversed(Base.metadata.sorted_tables):
-                session.execute(table.delete())
-            session.execute(text("SET FOREIGN_KEY_CHECKS=1;"))
-        else:
-            for table in reversed(Base.metadata.sorted_tables):
-                session.execute(table.delete())
-        session.commit()
         yield session
     finally:
         session.close()
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(db_session):
+    from app.db.database import get_session
+    def _override_get_session():
+        yield db_session
+    app.dependency_overrides[get_session] = _override_get_session
+    client_instance = TestClient(app)
+    yield client_instance
+    app.dependency_overrides.clear()
 
 
 def test_1_hashtag_normalization():

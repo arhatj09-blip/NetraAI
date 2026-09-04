@@ -13,21 +13,15 @@ from app.db.repository import XPostRepository
 
 @pytest.fixture
 def session():
-    test_engine = create_engine(settings.database_url, **_engine_kwargs(settings.database_url))
+    test_db_url = "sqlite:///:memory:"
+    test_engine = create_engine(test_db_url, **_engine_kwargs(test_db_url))
+    with test_engine.connect() as conn:
+        conn.execute(text("PRAGMA foreign_keys = ON;"))
     create_db_and_tables(test_engine)
     session_factory = sessionmaker(bind=test_engine, expire_on_commit=False)
     db_session = session_factory()
+    db_session.execute(text("PRAGMA foreign_keys = ON;"))
     try:
-        # Clean any existing rows before each test to maintain test isolation
-        if not settings.database_url.startswith("sqlite"):
-            db_session.execute(text("SET FOREIGN_KEY_CHECKS=0;"))
-            for table in reversed(Base.metadata.sorted_tables):
-                db_session.execute(table.delete())
-            db_session.execute(text("SET FOREIGN_KEY_CHECKS=1;"))
-        else:
-            for table in reversed(Base.metadata.sorted_tables):
-                db_session.execute(table.delete())
-        db_session.commit()
         yield db_session
     finally:
         db_session.close()
